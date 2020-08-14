@@ -58,4 +58,4 @@ class Synthetic(BaseDataset):
         preds = np.asarray(np.argmax(preds, axis=1), dtype=np.uint8)
         for i in range(preds.shape[0]):
             save_img = Image.fromarray(preds[i])
-            save_img.save(os.path.join(sv_path, name[i]+'_result.png'))
+            save_img.save(os.path.join(sv_path, name[i]+'.png'))
