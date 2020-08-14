@@ -37,7 +37,7 @@ class Synthetic(BaseDataset):
         self.crop_size = crop_size
         
         self.files = []
-        with open(list_path), "r") as f:
+        with open(list_path, "r") as f:
             for line in f.readlines():
                 self.files.append(line.strip("\n"))
     
