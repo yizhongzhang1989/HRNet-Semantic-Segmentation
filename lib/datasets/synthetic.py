@@ -37,14 +37,17 @@ class Synthetic(BaseDataset):
         self.crop_size = crop_size
         
         self.files = []
-        with open(os.path.join(self.root, "list.txt"), "r") as f:
+        with open(list_path), "r") as f:
             for line in f.readlines():
                 self.files.append(line.strip("\n"))
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
-        label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
         size = image.shape
         image = image.transpose((2, 0, 1))
         image = image.astype(np.float32)
-        return image.copy(), label.copy(), np.array(size), self.files[index]
+        if 'test' in self.list_path:
+            return image.copy(), np.array(size), self.files[index]
+        else:
+            label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
+            return image.copy(), label.copy(), np.array(size), self.files[index]

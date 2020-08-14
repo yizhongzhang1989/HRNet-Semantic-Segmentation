@@ -11,9 +11,9 @@ PRINT_FREQ: 100
 DATASET:
   DATASET: synthetic
   ROOT: 'data/'
-  TEST_SET: 'list/cityscapes/val.lst'
-  TRAIN_SET: 'list/cityscapes/train.lst'
-  NUM_CLASSES: 2
+  TEST_SET: 'data/synthetic/test_list.txt'
+  TRAIN_SET: 'data/synthetic/train_list.txt'
+  NUM_CLASSES: 41
 MODEL:
   NAME: seg_hrnet
   PRETRAINED: 'pretrained_models/hrnet_w18_small_model_v1.pth'
@@ -76,10 +76,10 @@ TRAIN:
   - 800
   - 600
   BASE_SIZE: 800
-  BATCH_SIZE_PER_GPU: 1
+  BATCH_SIZE_PER_GPU: 8
   SHUFFLE: true
   BEGIN_EPOCH: 0
-  END_EPOCH: 484
+  END_EPOCH: 200
   RESUME: true
   OPTIMIZER: sgd
   LR: 0.01
