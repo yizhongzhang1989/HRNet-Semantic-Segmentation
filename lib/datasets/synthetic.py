@@ -35,6 +35,7 @@ class Synthetic(BaseDataset):
         self.multi_scale = multi_scale
         self.flip = flip
         self.crop_size = crop_size
+        self.list_path = list_path
         
         self.files = []
         with open(list_path, "r") as f:
