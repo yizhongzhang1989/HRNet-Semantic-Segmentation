@@ -52,3 +52,10 @@ class Synthetic(BaseDataset):
         else:
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
             return image.copy(), label.copy(), np.array(size), self.files[index]
+    
+    def save_pred(self, preds, sv_path, name):
+        preds = preds.cpu().numpy().copy()
+        preds = np.asarray(np.argmax(preds, axis=1), dtype=np.uint8)
+        for i in range(preds.shape[0]):
+            save_img = Image.fromarray(preds[i])
+            save_img.save(os.path.join(sv_path, name[i]+'_result.png'))
