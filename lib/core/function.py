@@ -154,7 +154,7 @@ def validate(config, testloader, model, writer_dict, device):
         else:
             example[0] = example[0].numpy()[0]
             example[2] = torch.argmax(example[2].exp(), dim=1).cpu().numpy()
-            h, w = example[2].shape
+            _, h, w = example[2].shape
             tmp = np.zeros([3, h, w * 2], dtype=np.int32)
             tmp[:,:,0:w] = example[0]
             for i in range(h):
