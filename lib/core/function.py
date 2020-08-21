@@ -145,7 +145,7 @@ def validate(config, testloader, model, writer_dict, device):
                 tmp[1] = color[1]
                 tmp[2] = color[2]
                 writer_dict["color_map"].append(color)
-                writer.add_image("label=%d"%i, tmp)
+                writer.add_image("label", tmp, i)
         else:
             print(example)
     return print_loss, mean_IoU, IoU_array
