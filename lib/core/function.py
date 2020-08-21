@@ -152,7 +152,9 @@ def validate(config, testloader, model, writer_dict, device):
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         else:
-            print(example[2].shape)
+            example[2] = torch.argmax(example[2].exp(), dim=1)
+            writer.add_image("result", example[2], global_steps)
+
     return print_loss, mean_IoU, IoU_array
     
 
