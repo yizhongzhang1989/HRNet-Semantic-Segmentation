@@ -95,6 +95,7 @@ def validate(config, testloader, model, writer_dict, device):
     confusion_matrix = np.zeros(
         (config.DATASET.NUM_CLASSES, config.DATASET.NUM_CLASSES))
 
+    example = None
     with torch.no_grad():
         for _, batch in enumerate(testloader):
             image, label, _, _ = batch
@@ -105,6 +106,8 @@ def validate(config, testloader, model, writer_dict, device):
             losses, pred = model(image, label)
             pred = F.upsample(input=pred, size=(
                         size[-2], size[-1]), mode='bilinear')
+            if rank == 0 and example == None:
+                example = [batch[0], batch[1], pred]
             loss = losses.mean()
             reduced_loss = reduce_tensor(loss)
             ave_loss.update(reduced_loss.item())
@@ -133,6 +136,18 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_loss', print_loss, global_steps)
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer_dict['valid_global_steps'] = global_steps + 1
+        if global_steps == 0:
+            writer_dict["color_map"] = []
+            for i in range(config.DATASET.NUM_CLASSES):
+                color = np.random.randint(0, 256, 3)
+                tmp = np.zeros([3,8,8], dtype=np.int32)
+                tmp[0] = color[0]
+                tmp[1] = color[1]
+                tmp[2] = color[2]
+                writer_dict["color_map"].append(color)
+                writer.add_image("label=%d"%i, tmp)
+        else:
+            print(example)
     return print_loss, mean_IoU, IoU_array
     
 
