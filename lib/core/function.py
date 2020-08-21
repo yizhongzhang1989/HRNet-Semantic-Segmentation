@@ -146,14 +146,20 @@ def validate(config, testloader, model, writer_dict, device):
                 color = np.random.randint(0, 256, 3)
                 row = i // row_length
                 col = i % row_length
-                color_sample[0,row*10:row*10+10,col*10:col*10+10] = color[0]
-                color_sample[1,row*10:row*10+10,col*10:col*10+10] = color[1]
-                color_sample[2,row*10:row*10+10,col*10:col*10+10] = color[2]
+                color_sample[:,row*10:row*10+10,col*10:col*10+10] = color
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         else:
-            example[2] = torch.argmax(example[2].exp(), dim=1)
-            writer.add_image("result", example[2], global_steps)
+            example[0] = example[0].numpy()[0]
+            example[2] = torch.argmax(example[2].exp(), dim=1).cpu().numpy()
+            h, w = example[2].shape
+            tmp = np.zeros([3, h, w * 2], dtype=np.int32)
+            tmp[:,:,0:w] = example[0]
+            for i in range(h):
+                for j in range(w):
+                    color = writer_dict["color_map"][example[2][i,j]]
+                    tmp[:,i,j + w] = color
+            writer.add_image("result", tmp, global_steps)
 
     return print_loss, mean_IoU, IoU_array
     
