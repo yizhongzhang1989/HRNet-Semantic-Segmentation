@@ -104,10 +104,10 @@ def validate(config, testloader, model, writer_dict, device):
             label = label.long().to(device)
 
             losses, pred = model(image, label)
-            pred = F.upsample(input=pred, size=(
-                        size[-2], size[-1]), mode='bilinear')
             if rank == 0 and example == None:
                 example = [batch[0], batch[1], pred]
+            pred = F.upsample(input=pred, size=(
+                        size[-2], size[-1]), mode='bilinear')
             loss = losses.mean()
             reduced_loss = reduce_tensor(loss)
             ave_loss.update(reduced_loss.item())
@@ -152,7 +152,7 @@ def validate(config, testloader, model, writer_dict, device):
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         else:
-            print(example)
+            print(example[2].shape)
     return print_loss, mean_IoU, IoU_array
     
 
