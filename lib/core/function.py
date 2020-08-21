@@ -146,7 +146,9 @@ def validate(config, testloader, model, writer_dict, device):
                 color = np.random.randint(0, 256, 3)
                 row = i // row_length
                 col = i % row_length
-                color_sample[:,row*10:row*10+10,col*10:col*10+10] = color
+                color_sample[0,row*10:row*10+10,col*10:col*10+10] = color[0]
+                color_sample[1,row*10:row*10+10,col*10:col*10+10] = color[1]
+                color_sample[2,row*10:row*10+10,col*10:col*10+10] = color[2]
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         else:
