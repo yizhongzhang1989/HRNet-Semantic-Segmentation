@@ -152,7 +152,7 @@ def validate(config, testloader, model, writer_dict, device):
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         else:
-            example[0] = 255 - example[0].numpy()[0]
+            example[0] = 255 - example[0].numpy()[0,::-1,:,:]
             example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
             h, w = example[2].shape
             tmp = np.zeros([3, h, w * 2], dtype=np.int32)
