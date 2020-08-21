@@ -138,14 +138,19 @@ def validate(config, testloader, model, writer_dict, device):
         writer_dict['valid_global_steps'] = global_steps + 1
         if global_steps == 0:
             writer_dict["color_map"] = []
+            row_length = 10
+            size = np.array([config.DATASET.NUM_CLASSES / row_length, row_length])
+            size = np.ceil(size).astype(np.int32)
+            color_sample = np.zeros([3, size[0] * 10, size[1] * 10], dtype=np.int32)
             for i in range(config.DATASET.NUM_CLASSES):
                 color = np.random.randint(0, 256, 3)
-                tmp = np.zeros([3,8,8], dtype=np.int32)
-                tmp[0] = color[0]
-                tmp[1] = color[1]
-                tmp[2] = color[2]
+                row = i // row_length
+                col = i % row_length
+                color_sample[0,row*10:row*10+10,col*10:col*10+10] = color[0]
+                color_sample[1,row*10:row*10+10,col*10:col*10+10] = color[1]
+                color_sample[2,row*10:row*10+10,col*10:col*10+10] = color[2]
                 writer_dict["color_map"].append(color)
-                writer.add_image("label", tmp, i)
+            writer.add_image("color_sample", color_sample)
         else:
             print(example)
     return print_loss, mean_IoU, IoU_array
