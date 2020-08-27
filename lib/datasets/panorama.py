@@ -41,13 +41,14 @@ class Panorama(BaseDataset):
         self.images = []
         with open(list_path, "r") as f:
             for line in f.readlines():
-                self.files.append(line.strip("\n"))
+                for _ in range(16):
+                    self.files.append(line.strip("\n"))
                 self.images.append(None)
     
     def __getitem__(self, index):
-        if self.images[index] is None:
-            self.images[index] = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
-        image = self.images[index]
+        if self.images[index // 16] is None:
+            self.images[index // 16] = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
+        image = self.images[index // 16]
         theta = np.random.random() * 360
         phi = np.random.random() * 20 - 10
 
