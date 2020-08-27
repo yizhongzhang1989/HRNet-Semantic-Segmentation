@@ -12,3 +12,4 @@ from .cityscapes import Cityscapes as cityscapes
 from .lip import LIP as lip
 from .pascal_ctx import PASCALContext as pascal_ctx
 from .synthetic import Synthetic as synthetic
+from .panorama import Panorama as panorama
