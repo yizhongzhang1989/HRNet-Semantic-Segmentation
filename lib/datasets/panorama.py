@@ -49,6 +49,7 @@ class Panorama(BaseDataset):
 
         size = np.array([480, 480, 3])
         image = self.crop_panorama_image(image, theta, phi, 480, 480, 60)
+        image = image.transpose((2, 0, 1))
         if 'test' in self.list_path:
             return image.copy(), np.array(size), self.files[index]
         else:
