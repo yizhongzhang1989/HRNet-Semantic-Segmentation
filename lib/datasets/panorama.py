@@ -2,6 +2,7 @@ import os
 
 import cv2
 import numpy as np
+import random
 from PIL import Image
 
 import torch
@@ -49,8 +50,12 @@ class Panorama(BaseDataset):
         if self.images[index // 16] is None:
             self.images[index // 16] = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
         image = self.images[index // 16]
-        theta = np.random.random() * 360
-        phi = np.random.random() * 20 - 10
+        if 'val' in self.list_path:
+            theta = np.random.random() * 360
+            phi = np.random.random() * 20 - 10
+        else:
+            theta = random.random() * 360
+            phi = random.random() * 20 - 10
 
         size = np.array([480, 480, 3])
         image = self.crop_panorama_image(image, theta, phi, 480, 480, 60)
