@@ -68,6 +68,13 @@ class Panorama(BaseDataset):
             label = self.crop_panorama_image(label, theta, phi, 480, 480, 60)
             return image.copy(), label.copy(), np.array(size), self.files[index]
     
+    def save_pred(self, preds, sv_path, name):
+        preds = preds.cpu().numpy().copy()
+        preds = np.asarray(np.argmax(preds, axis=1), dtype=np.uint8)
+        for i in range(preds.shape[0]):
+            save_img = Image.fromarray(preds[i])
+            save_img.save(os.path.join(sv_path, name[i]+'.png'))
+    
     def crop_panorama_image(self, img, theta=0.0, phi=0.0, res_x=512, res_y=512, fov=60.0, debug=False):
         img_x = img.shape[0]
         img_y = img.shape[1]
