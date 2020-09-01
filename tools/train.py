@@ -194,10 +194,12 @@ def main():
                                  weight=train_dataset.class_weights)
 
     model = FullModel(model, criterion)
-    model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+    if distributed:
+        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = model.to(device)
-    model = nn.parallel.DistributedDataParallel(
-        model, device_ids=[args.local_rank], output_device=args.local_rank)
+    if distributed:
+        model = nn.parallel.DistributedDataParallel(
+            model, device_ids=[args.local_rank], output_device=args.local_rank)
 
     # optimizer
     if config.TRAIN.OPTIMIZER == 'sgd':
