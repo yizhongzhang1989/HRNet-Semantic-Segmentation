@@ -139,17 +139,6 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer.add_figure('confusion_matrix', plot_confusion_matrix(confusion_matrix), global_steps)
         
-        example[0] = 255 - example[0].numpy()[0,::-1,:,:]
-        example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
-        h, w = example[2].shape
-        tmp = np.zeros([3, h, w * 2], dtype=np.int32)
-        tmp[:,:,0:w] = example[0]
-        for i in range(h):
-            for j in range(w):
-                color = writer_dict["color_map"][example[2][i,j]]
-                tmp[:,i,j + w] = color
-        writer.add_image("result", tmp, global_steps)
-
         if global_steps == 0:
             writer_dict["color_map"] = []
             row_length = 10
@@ -166,6 +155,17 @@ def validate(config, testloader, model, writer_dict, device):
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
         
+        example[0] = 255 - example[0].numpy()[0,::-1,:,:]
+        example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
+        h, w = example[2].shape
+        tmp = np.zeros([3, h, w * 2], dtype=np.int32)
+        tmp[:,:,0:w] = example[0]
+        for i in range(h):
+            for j in range(w):
+                color = writer_dict["color_map"][example[2][i,j]]
+                tmp[:,i,j + w] = color
+        writer.add_image("result", tmp, global_steps)
+
         writer_dict['valid_global_steps'] = global_steps + 1
 
     return print_loss, mean_IoU, IoU_array
