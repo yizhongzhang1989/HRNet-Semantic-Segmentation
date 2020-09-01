@@ -93,11 +93,10 @@ def main():
             shutil.rmtree(models_dst_dir)
         shutil.copytree(os.path.join(this_dir, '../lib/models'), models_dst_dir)
 
-    if distributed:
-        torch.cuda.set_device(args.local_rank)
-        torch.distributed.init_process_group(
-            backend="nccl", init_method="env://",
-        )
+    torch.cuda.set_device(args.local_rank)
+    torch.distributed.init_process_group(
+        backend="nccl", init_method="env://",
+    )
 
     # prepare data
     crop_size = (config.TRAIN.IMAGE_SIZE[1], config.TRAIN.IMAGE_SIZE[0])
@@ -194,12 +193,10 @@ def main():
                                  weight=train_dataset.class_weights)
 
     model = FullModel(model, criterion)
-    if distributed:
-        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+    model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model = model.to(device)
-    if distributed:
-        model = nn.parallel.DistributedDataParallel(
-            model, device_ids=[args.local_rank], output_device=args.local_rank)
+    model = nn.parallel.DistributedDataParallel(
+        model, device_ids=[args.local_rank], output_device=args.local_rank)
 
     # optimizer
     if config.TRAIN.OPTIMIZER == 'sgd':
