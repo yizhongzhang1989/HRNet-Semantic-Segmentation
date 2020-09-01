@@ -146,6 +146,7 @@ def adjust_learning_rate(optimizer, base_lr, max_iters,
     return lr
 
 def plot_confusion_matrix(cm):
+    import matplotlib.pyplot as plt
     label_map = {
         0: "ground",
         1: "ceiling",
