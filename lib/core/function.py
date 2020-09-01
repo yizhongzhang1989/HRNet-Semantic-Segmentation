@@ -135,6 +135,7 @@ def validate(config, testloader, model, writer_dict, device):
         global_steps = writer_dict['valid_global_steps']
         writer.add_scalar('valid_loss', print_loss, global_steps)
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
+        writer.add_text("confusion_matrix", np.array2string(confusion_matrix))
         writer_dict['valid_global_steps'] = global_steps + 1
         if global_steps == 0:
             writer_dict["color_map"] = []
