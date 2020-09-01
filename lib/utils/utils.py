@@ -177,7 +177,7 @@ def plot_confusion_matrix(cm):
     cm = cm[slices]
     cm = cm[:,slices]
     
-    figure = plt.figure(figsize=(20, 20))
+    figure = plt.figure(figsize=(12, 12))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title("Confusion matrix")
     plt.colorbar()

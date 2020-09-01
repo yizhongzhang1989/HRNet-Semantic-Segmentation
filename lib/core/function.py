@@ -84,8 +84,9 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
                       batch_time.average(), lr, print_loss)
             logging.info(msg)
             
-            writer.add_scalar('train_loss', print_loss, global_steps)
-            writer_dict['train_global_steps'] = global_steps + 1
+    writer.add_scalar('train_loss', print_loss, global_steps)
+    writer.add_scalar('learning_rate', lr, global_steps)
+    writer_dict['train_global_steps'] = global_steps + 1
 
 def validate(config, testloader, model, writer_dict, device):
     
@@ -137,7 +138,18 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_loss', print_loss, global_steps)
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer.add_figure('confusion_matrix', plot_confusion_matrix(confusion_matrix), global_steps)
-        writer_dict['valid_global_steps'] = global_steps + 1
+        
+        example[0] = 255 - example[0].numpy()[0,::-1,:,:]
+        example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
+        h, w = example[2].shape
+        tmp = np.zeros([3, h, w * 2], dtype=np.int32)
+        tmp[:,:,0:w] = example[0]
+        for i in range(h):
+            for j in range(w):
+                color = writer_dict["color_map"][example[2][i,j]]
+                tmp[:,i,j + w] = color
+        writer.add_image("result", tmp, global_steps)
+
         if global_steps == 0:
             writer_dict["color_map"] = []
             row_length = 10
@@ -153,17 +165,8 @@ def validate(config, testloader, model, writer_dict, device):
                 color_sample[2,row*10:row*10+10,col*10:col*10+10] = color[2]
                 writer_dict["color_map"].append(color)
             writer.add_image("color_sample", color_sample)
-        else:
-            example[0] = 255 - example[0].numpy()[0,::-1,:,:]
-            example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
-            h, w = example[2].shape
-            tmp = np.zeros([3, h, w * 2], dtype=np.int32)
-            tmp[:,:,0:w] = example[0]
-            for i in range(h):
-                for j in range(w):
-                    color = writer_dict["color_map"][example[2][i,j]]
-                    tmp[:,i,j + w] = color
-            writer.add_image("result", tmp, global_steps)
+        
+        writer_dict['valid_global_steps'] = global_steps + 1
 
     return print_loss, mean_IoU, IoU_array
     
