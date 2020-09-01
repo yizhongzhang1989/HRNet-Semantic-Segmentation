@@ -144,3 +144,57 @@ def adjust_learning_rate(optimizer, base_lr, max_iters,
     lr = base_lr*((1-float(cur_iters)/max_iters)**(power))
     optimizer.param_groups[0]['lr'] = lr
     return lr
+
+def plot_confusion_matrix(cm):
+    label_map = {
+        0: "ground",
+        1: "ceiling",
+        2: "wall",
+        3: "pillar",
+        4: "door",
+        5: "window",
+        6: "stairs",
+        7: "escalator",
+        8: "elevator",
+        10: "layered_shelf",
+        11: "table_shelf",
+        13: "tall_freezer",
+        14: "short_freezer",
+        15: "cashier",
+        20: "hanging_object",
+        30: "other_object",
+        40: "removed_object"
+    }
+    class_names = []
+    slices = []
+    for i in range(41):
+        if i in label_map:
+            slices.append(True)
+            class_names.append(label_map[i])
+        else:
+            slices.append(False)
+    cm = cm[slices]
+    cm = cm[:,slices]
+    
+    figure = plt.figure(figsize=(20, 20))
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title("Confusion matrix")
+    plt.colorbar()
+    tick_marks = np.arange(len(class_names))
+    plt.xticks(tick_marks, class_names, rotation=45)
+    plt.yticks(tick_marks, class_names)
+
+    # Normalize the confusion matrix.
+    cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+
+    # Use white text if squares are dark; otherwise black.
+    threshold = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            color = "white" if cm[i, j] > threshold else "black"
+            plt.text(j, i, cm[i, j], horizontalalignment="center", color=color)
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    return figure

@@ -21,6 +21,7 @@ from utils.utils import AverageMeter
 from utils.utils import get_confusion_matrix
 from utils.utils import adjust_learning_rate
 from utils.utils import get_world_size, get_rank
+from utils.utils import plot_confusion_matrix
 
 def reduce_tensor(inp):
     """
@@ -135,7 +136,7 @@ def validate(config, testloader, model, writer_dict, device):
         global_steps = writer_dict['valid_global_steps']
         writer.add_scalar('valid_loss', print_loss, global_steps)
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
-        writer.add_text("confusion_matrix", np.array2string(confusion_matrix))
+        writer.add_figure('confusion_matrix', plot_confusion_matrix(confusion_matrix), global_steps)
         writer_dict['valid_global_steps'] = global_steps + 1
         if global_steps == 0:
             writer_dict["color_map"] = []
