@@ -176,7 +176,6 @@ def plot_confusion_matrix(cm):
             slices.append(False)
     cm = cm[slices]
     cm = cm[:,slices]
-    cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
     
     figure = plt.figure(figsize=(12, 12))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
@@ -186,12 +185,12 @@ def plot_confusion_matrix(cm):
     plt.xticks(tick_marks, class_names, rotation=45)
     plt.yticks(tick_marks, class_names)
 
-    # Use white text if squares are dark; otherwise black.
     threshold = cm.max() / 2.
+    normalized = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
             color = "white" if cm[i, j] > threshold else "black"
-            plt.text(j, i, cm[i, j], horizontalalignment="center", color=color)
+            plt.text(j, i, normalized[i, j], horizontalalignment="center", color=color)
 
     plt.tight_layout()
     plt.ylabel('True label')
