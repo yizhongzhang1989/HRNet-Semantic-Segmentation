@@ -85,7 +85,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
                       batch_time.average(), lr, loss)
             logging.info(msg)
             logging.info(files)
-            logging.info(losses.mean(dim=[2,3])[0].cpu().numpy())
+            logging.info(losses.mean(dim=[2,3])[0])
             writer.add_scalar('train_loss', loss, global_steps)
             writer.add_scalar('learning_rate', lr, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1
