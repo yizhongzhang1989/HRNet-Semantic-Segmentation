@@ -51,7 +51,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
     world_size = get_world_size()
 
     for i_iter, batch in enumerate(trainloader):
-        images, labels, _, _ = batch
+        images, labels, _, files = batch
         images = images.to(device)
         labels = labels.long().to(device)
 
@@ -80,13 +80,15 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
             print_loss = ave_loss.average() / world_size
             msg = 'Epoch: [{}/{}] Iter:[{}/{}], Time: {:.2f}, ' \
                   'lr: {:.6f}, Loss: {:.6f}' .format(
-                      epoch, num_epoch, i_iter, epoch_iters, 
-                      batch_time.average(), lr, print_loss)
+                      epoch, num_epoch, i_iter, epoch_iters,
+                      batch_time.average(), lr, loss)
             logging.info(msg)
-            
-    writer.add_scalar('train_loss', print_loss, global_steps)
-    writer.add_scalar('learning_rate', lr, global_steps)
-    writer_dict['train_global_steps'] = global_steps + 1
+            logging.info(files)
+            logging.info(losses)
+            writer.add_scalar('train_loss', reduced_loss.item(), global_steps)
+            writer.add_scalar('learning_rate', lr, global_steps)
+            writer_dict['train_global_steps'] = global_steps + 1
+            global_steps += 1
 
 def validate(config, testloader, model, writer_dict, device):
     
@@ -139,6 +141,7 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer.add_figure('confusion_matrix', plot_confusion_matrix(confusion_matrix), global_steps)
         
+        """
         if global_steps == 0:
             writer_dict["color_map"] = []
             row_length = 10
@@ -165,6 +168,7 @@ def validate(config, testloader, model, writer_dict, device):
                 color = writer_dict["color_map"][example[2][i,j]]
                 tmp[:,i,j + w] = color
         writer.add_image("result", tmp, global_steps)
+        """
 
         writer_dict['valid_global_steps'] = global_steps + 1
 

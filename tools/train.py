@@ -262,6 +262,9 @@ def main():
                 'optimizer': optimizer.state_dict(),
             }, os.path.join(final_output_dir,'checkpoint.pth.tar'))
 
+            torch.save(model.module.state_dict(),
+                           os.path.join(final_output_dir, '%d.pth' % epoch))
+
             if mean_IoU > best_mIoU:
                 best_mIoU = mean_IoU
                 torch.save(model.module.state_dict(),
