@@ -71,10 +71,11 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
         # update average loss
         ave_loss.update(reduced_loss.item())
 
-        lr = adjust_learning_rate(optimizer,
-                                  base_lr,
-                                  num_iters,
-                                  i_iter+cur_iters)
+        #lr = adjust_learning_rate(optimizer,
+        #                          base_lr,
+        #                          num_iters,
+        #                          i_iter+cur_iters)
+        lr = optimizer.param_groups[0]['lr']
 
         if i_iter % config.PRINT_FREQ == 0 and rank == 0:
             print_loss = ave_loss.average() / world_size
