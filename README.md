@@ -1,3 +1,20 @@
+# HRNet for panoramas
+
+The directory tree should be look like this:
+````bash
+$SEG_ROOT/data
+├── panorama
+    ├── image
+    ├── label
+    ├── train_list.txt
+    ├── val_list.txt
+    └── test_list.txt
+````
+
+After sepcifying the directory of images or labels in `tools/generate_list.py`, you can use it to randomly seperate the dataset to get the three lists.
+
+Then prepare the pretrained imagenet parameters in `pretrained_models/`. Then you can use `python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml` to start training. In this case, you should prepare a `hrnet_w18_small_model_v1.pth` in `pretrained_models/`.
+
 # High-resolution networks (HRNets) for Semantic Segmentation 
 
 ## Branches
