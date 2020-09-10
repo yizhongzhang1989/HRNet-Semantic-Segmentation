@@ -1,17 +1,43 @@
 # HRNet for panoramas
 
+## Preparing data
+
+The panorama dataset directory tree should be look like this:
+````bash
+$DATASET_ROOT/
+├── store1
+│   ├── 1.jpg
+│   └── 1.png
+├── store3
+│   ├── 1.jpg
+│   └── 1.png
+└── store4
+    ├── 1.jpg
+    └── 1.png
+````
+
+Set `root_dir` as `$DATASET_ROOT` and which stores you want to preprocess in the beginning of `tools/preprocessPanorama.py`, then run it.
+
+The preprocessed data will be in `$DATASET_ROOT/merge/image` and `$DATASET_ROOT/merge/label`.
+
+Then set `data_dir` as `$DATASET_ROOT/merge/image` in `tools/generate_list.py`, you can use it to randomly seperate the dataset to get `train_list.txt`, `test_list.txt`, `val_list.txt`.
+
+## Training
+
 The directory tree should be look like this:
 ````bash
 $SEG_ROOT/data
-├── panorama
+└── panorama
     ├── image
+    │   ├── 1.jpg
+    │   └── 2.jpg
     ├── label
+    │   ├── 1.png
+    │   └── 2.png
     ├── train_list.txt
     ├── val_list.txt
     └── test_list.txt
 ````
-
-After sepcifying the directory of images or labels in `tools/generate_list.py`, you can use it to randomly seperate the dataset to get the three lists.
 
 Then prepare the pretrained imagenet parameters in `pretrained_models/`. Then you can use `python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml` to start training. In this case, you should prepare a `hrnet_w18_small_model_v1.pth` in `pretrained_models/`.
 

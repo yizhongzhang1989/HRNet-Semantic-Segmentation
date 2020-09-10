@@ -1,9 +1,10 @@
 import random
 import os
 
+data_dir = "D:/panorama/merge/image"
 total_list = []
 
-for filename in os.listdir("D:/panorama/merge/image"):
+for filename in os.listdir(data_dir):
     filename = filename.split(".")[0]
     total_list.append(filename + "\n")
 
