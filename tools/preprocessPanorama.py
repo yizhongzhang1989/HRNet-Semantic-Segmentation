@@ -4,6 +4,7 @@ import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
+threads = 2
 root_dir = "D:/panorama"
 stores = ["store1", "store2", "store4&5", "store6", "store7", "store8", "store9", "store10", "store11"]
 
@@ -129,7 +130,7 @@ if not os.path.exists("%s/merge/image" % root_dir):
 if not os.path.exists("%s/merge/label" % root_dir):
     os.mkdir("%s/merge/label" % root_dir)
 
-pool = ThreadPool()
+pool = ThreadPool(threads)
 for store in stores:
     if not os.path.exists("%s/%s/label" % (root_dir, store)):
         os.mkdir("%s/%s/label" % (root_dir, store))
