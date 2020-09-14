@@ -36,11 +36,15 @@ class FullModel(nn.Module):
     return torch.unsqueeze(loss,0), outputs
 
 def get_world_size():
+    if not hasattr(torch.distributed, "is_initialized"):
+        return 1
     if not torch.distributed.is_initialized():
         return 1
     return torch.distributed.get_world_size()
 
 def get_rank():
+    if not hasattr(torch.distributed, "is_initialized"):
+        return 0
     if not torch.distributed.is_initialized():
         return 0
     return torch.distributed.get_rank()
