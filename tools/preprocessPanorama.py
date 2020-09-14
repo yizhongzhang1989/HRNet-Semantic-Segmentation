@@ -1,9 +1,11 @@
 import os
 import cv2
 import numpy as np
+from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
 
 root_dir = "D:/panorama"
-stores = ["store1", "store2", "store4&5", "store6", "store7", "store8", "store10", "store11"]
+stores = ["store1", "store2", "store4&5", "store6", "store7", "store8", "store9", "store10", "store11"]
 
 def crop_panorama_image(img, theta=0.0, phi=0.0, res_x=512, res_y=512, fov=60.0, NEAREST_INTER=False):
     img_x = img.shape[0]
@@ -77,6 +79,40 @@ def crop_panorama_image(img, theta=0.0, phi=0.0, res_x=512, res_y=512, fov=60.0,
     else:
         return cv2.remap(img, map_y, map_x, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
 
+def preprocess_panorama(store, filename):
+    filename = filename.split(".")
+    if len(filename) != 2:
+        return
+    if filename[1] == "jpg":
+        filename = filename[0]
+        if os.path.exists("%s/%s/label/%s.png" % (root_dir, store, filename)):
+            print("pass ", store, filename)
+            return
+        if os.path.exists("%s/%s/%s_error.png" % (root_dir, store, filename)):
+            print("pass due to error", store, filename)
+            return
+        print(store, filename)
+        image = cv2.imread("%s/%s/%s.jpg" % (root_dir, store, filename), cv2.IMREAD_COLOR)
+        segmentation = cv2.imread("%s/%s/%s.png" % (root_dir, store, filename), cv2.IMREAD_COLOR)
+
+        h, w = segmentation.shape[:2]
+        label = np.ones([h, w], dtype=np.uint8) * 255
+
+        for key in colormap:
+            #label[np.abs(segmentation-colormap[key]).sum(axis=2) < 5] = key
+            label[(segmentation==colormap[key]).all(axis=2)] = key
+
+        cv2.imwrite("%s/%s/label/%s.png" % (root_dir, store, filename), label)
+        #label = cv2.imread("%s/%s/label/%s.png" % (root_dir, store, filename), cv2.IMREAD_GRAYSCALE)
+
+        for i in range(6):
+            theta = i * 60
+            tmpImage = crop_panorama_image(image, theta, 10, 540, 720, 80)
+            tmpLabel = crop_panorama_image(label, theta, 10, 540, 720, 80, True)
+            cv2.imwrite("%s/merge/image/%s_%s_%d.jpg" % (root_dir, store, filename, i), tmpImage)
+            cv2.imwrite("%s/merge/label/%s_%s_%d.png" % (root_dir, store, filename, i), tmpLabel)
+
+
 colormap = dict()
 with open("colorMap.txt", "r") as f:
     count = 0
@@ -93,35 +129,8 @@ if not os.path.exists("%s/merge/image" % root_dir):
 if not os.path.exists("%s/merge/label" % root_dir):
     os.mkdir("%s/merge/label" % root_dir)
 
+pool = ThreadPool()
 for store in stores:
     if not os.path.exists("%s/%s/label" % (root_dir, store)):
         os.mkdir("%s/%s/label" % (root_dir, store))
-    for filename in os.listdir("%s/%s" % (root_dir, store)):
-        filename = filename.split(".")
-        if len(filename) != 2:
-            continue
-        if filename[1] == "jpg":
-            filename = filename[0]
-            if os.path.exists("%s/%s/label/%s.png" % (root_dir, store, filename)):
-                print("pass ", store, filename)
-                continue
-            print(store, filename)
-            image = cv2.imread("%s/%s/%s.jpg" % (root_dir, store, filename), cv2.IMREAD_COLOR)
-            segmentation = cv2.imread("%s/%s/%s.png" % (root_dir, store, filename), cv2.IMREAD_COLOR)
-
-            h, w = segmentation.shape[:2]
-            label = np.ones([h, w], dtype=np.uint8) * 255
-
-            for key in colormap:
-                #label[np.abs(segmentation-colormap[key]).sum(axis=2) < 5] = key
-                label[(segmentation==colormap[key]).all(axis=2)] = key
-
-            cv2.imwrite("%s/%s/label/%s.png" % (root_dir, store, filename), label)
-            #label = cv2.imread("%s/%s/label/%s.png" % (root_dir, store, filename), cv2.IMREAD_GRAYSCALE)
-
-            for i in range(6):
-                theta = i * 60
-                tmpImage = crop_panorama_image(image, theta, 10, 540, 720, 80)
-                tmpLabel = crop_panorama_image(label, theta, 10, 540, 720, 80, True)
-                cv2.imwrite("%s/merge/image/%s_%s_%d.jpg" % (root_dir, store, filename, i), tmpImage)
-                cv2.imwrite("%s/merge/label/%s_%s_%d.png" % (root_dir, store, filename, i), tmpLabel)
+    pool.starmap(preprocess_panorama, zip(repeat(store), os.listdir("%s/%s" % (root_dir, store))))
