@@ -41,6 +41,8 @@ $SEG_ROOT/data
 
 Then prepare the pretrained imagenet parameters in `pretrained_models/`. Then you can use `python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml` to start training. In this case, you should prepare a `hrnet_w18_small_model_v1.pth` in `pretrained_models/`.
 
+If you are using pytorch on Windows, you can use `python tools/windows_train.py --cfg=experiments/panorama/train.yaml`. This script doesn't support multi-gpu.
+
 # High-resolution networks (HRNets) for Semantic Segmentation 
 
 ## Branches
