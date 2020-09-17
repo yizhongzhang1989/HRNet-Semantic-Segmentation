@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 from torch.nn import functional as F
@@ -18,4 +19,6 @@ def inference(network, arguments):
         predict = F.softmax(predict, dim=1)
         predict = predict.cpu().numpy()
         predict = np.squeeze(predict)
+        if not os.path.exists(os.path.dirname(output_list[i])):
+            os.makedirs(output_list[i])
         cv2.imwrite(output_list[i], predict)
