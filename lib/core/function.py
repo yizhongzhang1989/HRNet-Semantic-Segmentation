@@ -36,6 +36,7 @@ def reduce_tensor(inp):
         dist.reduce(reduced_inp, dst=0)
     return reduced_inp
 
+
 def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
          trainloader, optimizer, model, writer_dict, device):
     
@@ -69,24 +70,24 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
         tic = time.time()
 
         # update average loss
-        ave_loss.update(reduced_loss.item())
+        #ave_loss.update(reduced_loss.item())
 
-        #lr = adjust_learning_rate(optimizer,
-        #                          base_lr,
-        #                          num_iters,
-        #                          i_iter+cur_iters)
-        lr = optimizer.param_groups[0]['lr']
+        lr = adjust_learning_rate(optimizer,
+                                  base_lr,
+                                  num_iters,
+                                  i_iter+cur_iters)
+        #lr = optimizer.param_groups[0]['lr']
 
         if i_iter % config.PRINT_FREQ == 0 and rank == 0:
-            print_loss = ave_loss.average() / world_size
+            #print_loss = ave_loss.average() / world_size
             msg = 'Epoch: [{}/{}] Iter:[{}/{}], Time: {:.2f}, ' \
                   'lr: {:.6f}, Loss: {:.6f}' .format(
                       epoch, num_epoch, i_iter, epoch_iters,
-                      batch_time.average(), lr, loss)
+                      batch_time.average(), lr, loss / world_size)
             logging.info(msg)
             logging.info(files)
             logging.info(losses.mean(dim=[2,3])[0])
-            writer.add_scalar('train_loss', loss, global_steps)
+            writer.add_scalar('train_loss', loss / world_size, global_steps)
             writer.add_scalar('learning_rate', lr, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1
             global_steps += 1
@@ -141,36 +142,6 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_loss', print_loss, global_steps)
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer.add_figure('confusion_matrix', plot_confusion_matrix(confusion_matrix), global_steps)
-        
-        """
-        if global_steps == 0:
-            writer_dict["color_map"] = []
-            row_length = 10
-            size = np.array([config.DATASET.NUM_CLASSES / row_length, row_length])
-            size = np.ceil(size).astype(np.int32)
-            color_sample = np.zeros([3, size[0] * 10, size[1] * 10], dtype=np.int32)
-            for i in range(config.DATASET.NUM_CLASSES):
-                color = np.random.randint(0, 256, 3)
-                row = i // row_length
-                col = i % row_length
-                color_sample[0,row*10:row*10+10,col*10:col*10+10] = color[0]
-                color_sample[1,row*10:row*10+10,col*10:col*10+10] = color[1]
-                color_sample[2,row*10:row*10+10,col*10:col*10+10] = color[2]
-                writer_dict["color_map"].append(color)
-            writer.add_image("color_sample", color_sample)
-        
-        example[0] = 255 - example[0].numpy()[0,::-1,:,:]
-        example[2] = example[2].exp().argmax(dim=1).cpu().numpy()[0]
-        h, w = example[2].shape
-        tmp = np.zeros([3, h, w * 2], dtype=np.int32)
-        tmp[:,:,0:w] = example[0]
-        for i in range(h):
-            for j in range(w):
-                color = writer_dict["color_map"][example[2][i,j]]
-                tmp[:,i,j + w] = color
-        writer.add_image("result", tmp, global_steps)
-        """
-
         writer_dict['valid_global_steps'] = global_steps + 1
 
     return print_loss, mean_IoU, IoU_array
