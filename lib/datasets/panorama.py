@@ -47,9 +47,9 @@ class Panorama(BaseDataset):
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
         size = image.shape
-        image = image.transpose((2, 0, 1))
         image = image.astype(np.float32)
         if 'test' in self.list_path:
+            image = image.transpose((2, 0, 1))
             return image.copy(), np.array(size), self.files[index]
         else:
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
