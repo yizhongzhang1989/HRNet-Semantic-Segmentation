@@ -1,12 +1,17 @@
 import random
 import os
+import cv2
 
-data_dir = "D:/panorama/merge/image"
+data_dir = "D:/panorama/merge"
 total_list = []
 
-for filename in os.listdir(data_dir):
+for filename in os.listdir("%s/label" % data_dir):
     filename = filename.split(".")[0]
-    total_list.append(filename + "\n")
+    label = cv2.imread("%s/label/%s.png" % (data_dir, filename), cv2.IMREAD_GRAYSCALE)
+    invalid = (label == 255).mean()
+    print(filename, ", %f percent of the pixels are invalid." % (invalid * 100))
+    if invalid < 0.01:
+        total_list.append(filename + "\n")
 
 train_list = []
 test_list = []
@@ -21,9 +26,9 @@ for line in total_list:
     else:
         train_list.append(line)
 
-with open("train_list.txt", "w") as f:
+with open("%s/train_list.txt" % data_dir, "w") as f:
     f.writelines(train_list)
-with open("test_list.txt", "w") as f:
+with open("%s/test_list.txt" % data_dir, "w") as f:
     f.writelines(test_list)
-with open("val_list.txt", "w") as f:
+with open("%s/val_list.txt" % data_dir, "w") as f:
     f.writelines(val_list)
