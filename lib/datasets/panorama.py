@@ -43,6 +43,25 @@ class Panorama(BaseDataset):
         with open(list_path, "r") as f:
             for line in f.readlines():
                 self.files.append(line.strip("\n"))
+        self.compress_map = {
+            0: 0,
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+            5: 5,
+            6: 6,
+            7: 7,
+            8: 8,
+            10: 9,
+            11: 10,
+            13: 11,
+            14: 12,
+            15: 13,
+            20: 14,
+            30: 15,
+            40: 16,
+        }
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
@@ -53,6 +72,7 @@ class Panorama(BaseDataset):
             return image.copy(), np.array(size), self.files[index]
         else:
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
+            label = self.compress_label(label)
             image, label = self.gen_sample(image, label, self.multi_scale, self.flip, self.center_crop_test)
             return image.copy(), label.copy(), np.array(size), self.files[index]
     
@@ -62,3 +82,8 @@ class Panorama(BaseDataset):
         for i in range(preds.shape[0]):
             save_img = Image.fromarray(preds[i])
             save_img.save(os.path.join(sv_path, name[i]+'.png'))
+    
+    def compress_label(self, label):
+        for key in self.compress_map:
+            label[label == key] = self.compress_map[key]
+        return label
