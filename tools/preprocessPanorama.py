@@ -4,9 +4,33 @@ import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
 from itertools import repeat
 
-threads = 2
+threads = 3
 root_dir = "D:/panorama"
 stores = ["store1", "store2", "store4&5", "store6", "store7", "store8", "store9", "store10", "store11"]
+image_fov = 50
+image_per_panorama = 10
+image_w = 1024
+image_h = 768
+
+compress_map = {
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    10: 9,
+    11: 10,
+    13: 11,
+    14: 12,
+    15: 13,
+    20: 14,
+    30: 15,
+    40: 16,
+}
 
 def crop_panorama_image(img, theta=0.0, phi=0.0, res_x=512, res_y=512, fov=60.0, NEAREST_INTER=False):
     img_x = img.shape[0]
@@ -86,32 +110,31 @@ def preprocess_panorama(store, filename):
         return
     if filename[1] == "jpg":
         filename = filename[0]
-        if os.path.exists("%s/%s/label/%s.png" % (root_dir, store, filename)):
-            print("pass ", store, filename)
-            return
-        if os.path.exists("%s/%s/%s_error.png" % (root_dir, store, filename)):
-            print("pass due to error", store, filename)
-            return
+        #if os.path.exists("%s/%s/%s_error.png" % (root_dir, store, filename)):
+        #    print("pass due to error", store, filename)
+        #    return
         print(store, filename)
+        
         image = cv2.imread("%s/%s/%s.jpg" % (root_dir, store, filename), cv2.IMREAD_COLOR)
-        segmentation = cv2.imread("%s/%s/%s.png" % (root_dir, store, filename), cv2.IMREAD_COLOR)
+        if os.path.exists("%s/%s/label/%s.png" % (root_dir, store, filename)):
+            label = cv2.imread("%s/%s/label/%s.png" % (root_dir, store, filename), cv2.IMREAD_GRAYSCALE)
+        else:
+            segmentation = cv2.imread("%s/%s/%s.png" % (root_dir, store, filename), cv2.IMREAD_COLOR)
+            h, w = segmentation.shape[:2]
+            label = np.ones([h, w], dtype=np.uint8) * 255
+            for key in colormap:
+                #label[np.abs(segmentation-colormap[key]).sum(axis=2) < 5] = key
+                label[(segmentation==colormap[key]).all(axis=2)] = compress_map[key]
+            cv2.imwrite("%s/%s/label/%s.png" % (root_dir, store, filename), label)
 
-        h, w = segmentation.shape[:2]
-        label = np.ones([h, w], dtype=np.uint8) * 255
-
-        for key in colormap:
-            #label[np.abs(segmentation-colormap[key]).sum(axis=2) < 5] = key
-            label[(segmentation==colormap[key]).all(axis=2)] = key
-
-        cv2.imwrite("%s/%s/label/%s.png" % (root_dir, store, filename), label)
-        #label = cv2.imread("%s/%s/label/%s.png" % (root_dir, store, filename), cv2.IMREAD_GRAYSCALE)
-
-        for i in range(6):
-            theta = i * 60
-            tmpImage = crop_panorama_image(image, theta, 10, 540, 720, 80)
-            tmpLabel = crop_panorama_image(label, theta, 10, 540, 720, 80, True)
-            cv2.imwrite("%s/merge/image/%s_%s_%d.jpg" % (root_dir, store, filename, i), tmpImage)
-            cv2.imwrite("%s/merge/label/%s_%s_%d.png" % (root_dir, store, filename, i), tmpLabel)
+        start_angle = np.random.randint(0, 360)
+        for i in range(image_per_panorama):
+            theta = i * 360 / image_per_panorama + start_angle
+            theta = int(theta % 360)
+            tmpImage = crop_panorama_image(image, theta, 0, image_h, image_w, image_fov)
+            tmpLabel = crop_panorama_image(label, theta, 0, image_h, image_w, image_fov, True)
+            cv2.imwrite("%s/merge/image/%s_%s_%d_%d.jpg" % (root_dir, store, filename, theta, image_fov), tmpImage)
+            cv2.imwrite("%s/merge/label/%s_%s_%d_%d.png" % (root_dir, store, filename, theta, image_fov), tmpLabel)
 
 
 colormap = dict()
