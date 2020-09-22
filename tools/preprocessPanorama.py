@@ -12,26 +12,6 @@ image_per_panorama = 10
 image_w = 1024
 image_h = 768
 
-compress_map = {
-    0: 0,
-    1: 1,
-    2: 2,
-    3: 3,
-    4: 4,
-    5: 5,
-    6: 6,
-    7: 7,
-    8: 8,
-    10: 9,
-    11: 10,
-    13: 11,
-    14: 12,
-    15: 13,
-    20: 14,
-    30: 15,
-    40: 16,
-}
-
 def crop_panorama_image(img, theta=0.0, phi=0.0, res_x=512, res_y=512, fov=60.0, NEAREST_INTER=False):
     img_x = img.shape[0]
     img_y = img.shape[1]
@@ -124,7 +104,7 @@ def preprocess_panorama(store, filename):
             label = np.ones([h, w], dtype=np.uint8) * 255
             for key in colormap:
                 #label[np.abs(segmentation-colormap[key]).sum(axis=2) < 5] = key
-                label[(segmentation==colormap[key]).all(axis=2)] = compress_map[key]
+                label[(segmentation==colormap[key]).all(axis=2)] = key
             cv2.imwrite("%s/%s/label/%s.png" % (root_dir, store, filename), label)
 
         start_angle = np.random.randint(0, 360)
