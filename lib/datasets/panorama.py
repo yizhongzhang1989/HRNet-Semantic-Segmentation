@@ -85,5 +85,6 @@ class Panorama(BaseDataset):
     
     def compress_label(self, label):
         for key in self.compress_map:
-            label[label == key] = self.compress_map[key]
+            if key != self.compress_label[key]:
+                label[label == key] = self.compress_map[key]
         return label
