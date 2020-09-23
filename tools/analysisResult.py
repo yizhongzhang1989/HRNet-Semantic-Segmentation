@@ -120,8 +120,8 @@ for filename in all_results:
     error = (predict != truth).sum()
     errors.append(error)
 
-figure = plot_confusion_matrix(matrix)
-plt.savefig("%s/analysis.png" % output_dir)
+#figure = plot_confusion_matrix(matrix)
+#plt.savefig("%s/analysis.png" % output_dir)
 
 errors = np.array(errors)
 
@@ -146,7 +146,7 @@ for i in np.argsort(-errors)[:20]:
     for key in colormap:
         RGB_label[predict==key] = colormap[key]
     RGB_label = RGB_label[:,:,::-1]
-    cv2.imwrite("%s/hard/%s_predict.jpg" % (output_dir, name), RGB_label)
+    cv2.imwrite("%s/hard/%s_predict.png" % (output_dir, name), RGB_label)
 
 for i in np.argsort(errors)[:20]:
     filename = all_results[i]
@@ -169,4 +169,4 @@ for i in np.argsort(errors)[:20]:
     for key in colormap:
         RGB_label[predict==key] = colormap[key]
     RGB_label = RGB_label[:,:,::-1]
-    cv2.imwrite("%s/easy/%s_predict.jpg" % (output_dir, name), RGB_label)
+    cv2.imwrite("%s/easy/%s_predict.png" % (output_dir, name), RGB_label)
