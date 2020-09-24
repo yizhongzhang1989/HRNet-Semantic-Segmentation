@@ -13,7 +13,7 @@ DATASET:
   ROOT: 'data/'
   TEST_SET: 'data/panorama/val_list.txt'
   TRAIN_SET: 'data/panorama/train_list.txt'
-  NUM_CLASSES: 41
+  NUM_CLASSES: 17
 MODEL:
   NAME: seg_hrnet
   PRETRAINED: 'pretrained_models/hrnet_w18_small_model_v1.pth'
