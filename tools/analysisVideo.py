@@ -38,6 +38,7 @@ def parse_args():
     parser.add_argument("--input_video", help="input video file name", type=str, default="D:/testNet/input.mp4")
     parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="D:/testNet/output.avi")
     parser.add_argument("--batch_size", help="frames per batch", type=int, default=12)
+    parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.5)
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
                         default=None,
@@ -71,6 +72,7 @@ args = parse_args()
 input_video_dir = args.input_video
 output_video_dir = args.output_video
 batch_size = args.batch_size
+scale_factor = args.scale_factor
 model = models.seg_hrnet.get_seg_model(config)
 pretrained_dict = torch.load(args.pth)
 model_dict = model.state_dict()
@@ -99,11 +101,12 @@ while inputVideo.isOpened():
     if ret is False:
         break
     h, w = frame.shape[:2]
-    frame = cv2.resize(frame, (w // 2, h // 2))
+    h, w = h * scale_factor, w * scale_factor
+    h, w = int(h), int(w)
+    frame = cv2.resize(frame, (w, h))
     cv2.imshow("frame", frame)
     if cv2.waitKey(1) == ord('q'):
         break
-    h, w = h // 2, w // 2
     if outputVideo is None:
         outputVideo = cv2.VideoWriter(output_video_dir, cv2.VideoWriter_fourcc(*"DIVX"), inputVideo.get(cv2.CAP_PROP_FPS), (w * 2, h * 2))
     if len(batch) < batch_size:
