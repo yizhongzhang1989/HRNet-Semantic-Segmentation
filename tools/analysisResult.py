@@ -8,33 +8,15 @@ result_dir = "D:/testNet/test_val_results"
 output_dir = "D:/testNet"
 topK = 20
 
-compress_map = {
-    0: 0,
-    1: 1,
-    2: 2,
-    3: 3,
-    4: 4,
-    5: 5,
-    6: 6,
-    7: 7,
-    8: 8,
-    10: 9,
-    11: 10,
-    13: 11,
-    14: 12,
-    15: 13,
-    20: 14,
-    30: 15,
-    40: 16,
-}
-
 colormap = dict()
+compress_map = dict()
 with open("colorMap.txt", "r") as f:
-    for line in f.readlines():
+    for i, line in enumerate(f.readlines()):
         tmp = line.split(" ")
         label = int(tmp[1])
         r, g, b = int(tmp[2]), int(tmp[3]), int(tmp[4])
         colormap[label] = np.array([r,g,b], dtype=np.int32)
+        compress_map[label] = i
 
 if os.path.exists("%s/easy" % output_dir):
     shutil.rmtree("%s/easy" % output_dir)   
