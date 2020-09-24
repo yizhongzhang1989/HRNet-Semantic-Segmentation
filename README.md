@@ -9,7 +9,7 @@
 数字标号不一定是连续的，比如目前只有17类，但是最大的标号是40。在处理数据的过程中，会自动将不连续的标号转换成连续的标号，从第0行开始，这一类在第几行就会被转换成几。只要用VS Code在整个目录里搜索`colorMap.txt`，就能找到所有使用了这一转换过程的地方，以后需要修改的时候只要在这些地方修改就可以了。
 由于接下来提到的脚本基本上都会读取这个`colorMap.txt`，所以这些脚本请在HRNet根目录下运行。
 
-另外，各个脚本都是使用opencv读取的数据，所以读入的都是BGR图片，脚本中已经包含了输入时将BGR转为RGB的代码和输出时将RGB转为BGR的代码，所以不需要额外处理，如果想要写其他脚本，建议使用opencv读取数据以保持一致性。
+另外，各个脚本都是使用opencv读取的数据，所以读入的都是BGR图片，脚本中已经包含了输入时将BGR转为RGB的代码和输出时将RGB转为BGR的代码，所以不需要额外处理，如果想要写其他脚本，建议使用opencv读取数据以保持一致性。另外，opencv读取图片时路径里不能包含中文，所以处理数据集的时候超市的名字都应该改为英文。
 
 ## 准备数据
 
@@ -27,9 +27,11 @@ $DATASET_ROOT/
     └── def.png
 ````
 
-在`tools/preprocessPanorama.py`的开头将`root_dir`设为`$DATASET_ROOT`，然后设置哪些超市的照片将被处理，运行该脚本即开始处理数据。
+在`tools/preprocessPanorama.py`的开头将`root_dir`设为`$DATASET_ROOT`；将`threads`设为想要并行处理的线程数；将`stores`设为想要处理的超市的文件夹名称组成的tuple或者list；将`image_fov`设为x轴方向上的想要的fov；将`image_per_panorama`设为每张panorama切割出的图片数量；将`image_w`和`image_h`设为想要的分辨率。运行该脚本即开始处理数据。
 
-处理好的数据将位于`$DATASET_ROOT/merge/image`和`$DATASET_ROOT/merge/label`中。
+当fov为50时，`image_per_panorama`推荐为10；fov为60时推荐为9；fov为70时推荐为8。这样，相邻两张image的视野重叠大概正好是一半。这个切割的过程会将360°均分为`image_per_panorama`份，然后从一个随机的角度开始，每隔`360°/image_per_panorama`(取整)切出一张图。
+
+处理好的数据将位于`$DATASET_ROOT/merge/image`和`$DATASET_ROOT/merge/label`中。文件名的格式为`超市名称_原来的文件名_切割时的theta值_切割时的fov.jpg`和`超市名称_原来的文件名_切割时的theta值_切割时的fov.png`
 
 然后在`tools/generate_list.py`的开头将`data_dir`设为`$DATASET_ROOT/merge/label`，就将按照4:1:1的比例随机产生`train_list.txt`, `test_list.txt`, `val_list.txt`。在此过程中，会检查每一张label图片，如果一张图片内像素值为255(意味着不属于任何已定义的类别)的像素比例大于百分之一，这张label和对应的image将不会包含在这三个list中。
 
