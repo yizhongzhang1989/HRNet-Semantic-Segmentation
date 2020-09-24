@@ -69,7 +69,7 @@ $SEG_ROOT/data
 
 在这个脚本开头处设置`data_dir`(也就是数据集的`image`和`label`文件夹所在的文件夹)，`result_dir`（也就是网络输出的predict图片所在的文件夹），`output_dir`（输出分析结果的文件夹，将在这个文件夹里自动检测并创建`easy`和`hard`文件夹），`topK`（也就是输出的图像数量）
 
-这个脚本会统计每一张predict上像素判断正确率，并且将正确率最高的topK张图片和结果存放在`easy`文件夹中，将正确率最低的topK张图片和jie'g结果存放在`hard`文件夹中。
+这个脚本会统计每一张predict上像素判断正确率，并且将正确率最高的topK张图片和结果存放在`easy`文件夹中，将正确率最低的topK张图片和结果存放在`hard`文件夹中。
 
 ### tools/analysisVideo.py
 
