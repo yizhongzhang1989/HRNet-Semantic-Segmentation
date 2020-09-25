@@ -1,0 +1,17 @@
+ground 0 0 100 100
+ceiling 1 0 255 200
+wall 2 200 200 255
+pillar 3 200 0 255
+door 4 100 0 255
+window 5 255 120 200
+stairs 6 100 155 100
+escalator 7 0 200 125
+elevator 8 240 0 125
+layered_shelf 10 100 50 0
+table_like_shelf 11 255 0 0
+tall_freezer 13 125 200 255
+short_freezer 14 120 255 0
+cashier 15 0 255 100
+hanging_objects 20 255 200 0
+other_objects 30 25 25 50
+human_or_moving_objects 40 255 0 100
