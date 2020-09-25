@@ -74,27 +74,31 @@ model.load_state_dict(model_dict)
 model = model.cuda()
 
 inputVideo = cv2.VideoCapture(input_video_dir)
-outputVideo = None
+total_frame = int(inputVideo.get(cv2.CAP_PROP_FRAME_COUNT))
+h = int(inputVideo.get(cv2.CAP_PROP_FRAME_HEIGHT))
+w = int(inputVideo.get(cv2.CAP_PROP_FRAME_WIDTH))
+fps = inputVideo.get(cv2.CAP_PROP_FPS)
+
+h, w = h * scale_factor, w * scale_factor
+h, w = int(h), int(w)
+outputVideo = cv2.VideoWriter(output_video_dir, cv2.VideoWriter_fourcc(*"DIVX"), fps, (w * 2, h * 2))
 
 original = []
 batch = []
+count = 0
 while inputVideo.isOpened():
     ret, frame = inputVideo.read()
     if ret is False:
         break
-    h, w = frame.shape[:2]
-    h, w = h * scale_factor, w * scale_factor
-    h, w = int(h), int(w)
+    count += 1
+    print(count, "/", total_frame)
     frame = cv2.resize(frame, (w, h))
-    cv2.imshow("frame", frame)
-    if cv2.waitKey(1) == ord('q'):
-        break
-    if outputVideo is None:
-        outputVideo = cv2.VideoWriter(output_video_dir, cv2.VideoWriter_fourcc(*"DIVX"), inputVideo.get(cv2.CAP_PROP_FPS), (w * 2, h * 2))
-    if len(batch) < batch_size:
-        batch.append(preprocess(frame))
-        original.append(frame)
-    else:
+    #cv2.imshow("frame", frame)
+    #if cv2.waitKey(1) == ord('q'):
+    #    break
+    batch.append(preprocess(frame))
+    original.append(frame)
+    if len(batch) == batch_size:
         process_batch(model, batch, original)
         batch = []
         original = []
