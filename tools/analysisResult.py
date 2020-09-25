@@ -73,4 +73,4 @@ for i in np.argsort(errors)[:topK]:
     for key in colormap:
         RGB_label[predict==compress_map[key]] = colormap[key]
     mixed[:,w:,:] = RGB_label[:,:,::-1]
-    cv2.imwrite("%s/hard/%s_compare.png" % (output_dir, name), mixed)
+    cv2.imwrite("%s/easy/%s_compare.png" % (output_dir, name), mixed)
