@@ -49,15 +49,14 @@ for i in np.argsort(-errors)[:topK]:
     truth = cv2.imread("%s/label/%s" % (data_dir, filename), cv2.IMREAD_GRAYSCALE)
     h, w = truth.shape
     RGB_label = np.zeros([h, w, 3], dtype=np.uint8)
+    mixed = np.zeros([h, w * 2, 3], dtype=np.uint8)
     for key in colormap:
         RGB_label[truth==key] = colormap[key]
-    RGB_label = RGB_label[:,:,::-1]
-    mixed_truth = cv2.addWeighted(image, 0.3, RGB_label, 0.7, 0)
-    cv2.imwrite("%s/hard/%s_truth.jpg" % (output_dir, name), mixed_truth)
+    mixed[:,:w,:] = cv2.addWeighted(image, 0.3, RGB_label[:,:,::-1], 0.7, 0)
     for key in colormap:
-        RGB_label[predict==key] = colormap[key]
-    RGB_label = RGB_label[:,:,::-1]
-    cv2.imwrite("%s/hard/%s_predict.png" % (output_dir, name), RGB_label)
+        RGB_label[predict==compress_map[key]] = colormap[key]
+    mixed[:,w:,:] = RGB_label[:,:,::-1]
+    cv2.imwrite("%s/hard/%s_compare.png" % (output_dir, name), mixed)
 
 for i in np.argsort(errors)[:topK]:
     filename = all_results[i]
@@ -67,12 +66,11 @@ for i in np.argsort(errors)[:topK]:
     truth = cv2.imread("%s/label/%s" % (data_dir, filename), cv2.IMREAD_GRAYSCALE)
     h, w = truth.shape
     RGB_label = np.zeros([h, w, 3], dtype=np.uint8)
+    mixed = np.zeros([h, w * 2, 3], dtype=np.uint8)
     for key in colormap:
         RGB_label[truth==key] = colormap[key]
-    RGB_label = RGB_label[:,:,::-1]
-    mixed_truth = cv2.addWeighted(image, 0.3, RGB_label, 0.7, 0)
-    cv2.imwrite("%s/easy/%s_truth.jpg" % (output_dir, name), mixed_truth)
+    mixed[:,:w,:] = cv2.addWeighted(image, 0.3, RGB_label[:,:,::-1], 0.7, 0)
     for key in colormap:
-        RGB_label[predict==key] = colormap[key]
-    RGB_label = RGB_label[:,:,::-1]
-    cv2.imwrite("%s/easy/%s_predict.png" % (output_dir, name), RGB_label)
+        RGB_label[predict==compress_map[key]] = colormap[key]
+    mixed[:,w:,:] = RGB_label[:,:,::-1]
+    cv2.imwrite("%s/hard/%s_compare.png" % (output_dir, name), mixed)
