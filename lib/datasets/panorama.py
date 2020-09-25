@@ -59,7 +59,7 @@ class Panorama(BaseDataset):
         else:
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
             label = self.compress_label(label)
-            image, label = self.gen_sample(image, label, self.multi_scale, self.flip, self.center_crop_test)
+            image, label = self.gen_sample(image, label, self.multi_scale, self.flip)
             return image.copy(), label.copy(), np.array(size), self.files[index]
     
     def save_pred(self, preds, sv_path, name):
