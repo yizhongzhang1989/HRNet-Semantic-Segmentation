@@ -1,7 +1,7 @@
 import random
 import os
 
-data_dir = "D:/panorama/merge/image"
+data_dir = "E:/StoreSemanticLabelingData/Panorama_image/merge/image"
 total_list = []
 
 for filename in os.listdir(data_dir):
