@@ -177,30 +177,6 @@ public:
 		}
 	}
 
-	void ReadTexture(const char* tex_img_filename) {
-		unsigned char* img_ptr;
-		int w, h;
-		yz::image::readImageFromFile(tex_img_filename, img_ptr, w, h, 24);
-
-		tex_w = w;
-		tex_h = h;
-		tex_img.resize(tex_w * tex_h);
-
-		for (int j = 0; j < tex_h; j++)
-			for (int i = 0; i < tex_w; i++) {
-				int pid = j * tex_w + i;
-				tex_img[pid].x = img_ptr[pid * 3 + 0];
-				tex_img[pid].y = img_ptr[pid * 3 + 1];
-				tex_img[pid].z = img_ptr[pid * 3 + 2];
-			}
-	}
-
-	void CreateTexture() {
-		ground_tex.CreateTexture();
-		ground_tex.SetupTexturePtr(tex_w, tex_h, &tex_img[0].x, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-		ground_tex.LoadPtrToTexture();
-	}
-
 	void Draw(int tex_index = 0, float height = 1.45f) {
 		if (tex_index < 0 || tex_index >= ground_textures.size() || !ground_textures[tex_index].tex.tex_id)
 			return;
@@ -238,16 +214,6 @@ public:
 	};
 
 	std::vector<Tex> ground_textures;
-
-	float height = 1.45f;
-
-
-
-	float tex_size = 1.0f;
-	int tex_w, tex_h;
-	std::vector<yz::uchar3>	tex_img;
-
-	yz::opengl::Texture	ground_tex;
 };
 
 PanoSphere	pano_sphere;
