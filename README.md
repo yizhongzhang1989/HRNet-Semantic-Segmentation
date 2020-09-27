@@ -1,30 +1,43 @@
 # HRNet for panoramas
 
-## Preparing data
+## colorMap
 
-The panorama dataset directory tree should be look like this:
+在HRNet根目录下的`colorMap.txt`定义了关于各类别的信息。每一行是一类，格式如下：
+```
+类别名称 数字标号 R G B
+```
+数字标号不一定是连续的，比如目前只有17类，但是最大的标号是40。在处理数据的过程中，会自动将不连续的标号转换成连续的标号，从第0行开始，这一类在第几行就会被转换成几。只要用VS Code在整个目录里搜索`colorMap.txt`，就能找到所有使用了这一转换过程的地方，以后需要修改的时候只要在这些地方修改就可以了。
+由于接下来提到的脚本基本上都会读取这个`colorMap.txt`，所以这些脚本请在HRNet根目录下运行。
+
+另外，各个脚本都是使用opencv读取的数据，所以读入的都是BGR图片，脚本中已经包含了输入时将BGR转为RGB的代码和输出时将RGB转为BGR的代码，所以不需要额外处理，如果想要写其他脚本，建议使用opencv读取数据以保持一致性。另外，opencv读取图片时路径里不能包含中文，所以处理数据集的时候超市的名字都应该改为英文。
+
+## 准备数据
+
+panorama数据集的目录结构如下
 ````bash
 $DATASET_ROOT/
 ├── store1
 │   ├── 1.jpg
 │   └── 1.png
 ├── store3
-│   ├── 1.jpg
-│   └── 1.png
+│   ├── a.jpg
+│   └── a.png
 └── store4
-    ├── 1.jpg
-    └── 1.png
+    ├── def.jpg
+    └── def.png
 ````
 
-Set `root_dir` as `$DATASET_ROOT` and which stores you want to preprocess in the beginning of `tools/preprocessPanorama.py`, then run it.
+在`tools/preprocessPanorama.py`的开头将`root_dir`设为`$DATASET_ROOT`；将`threads`设为想要并行处理的线程数；将`stores`设为想要处理的超市的文件夹名称组成的tuple或者list；将`image_fov`设为x轴方向上的想要的fov；将`image_per_panorama`设为每张panorama切割出的图片数量；将`image_w`和`image_h`设为想要的分辨率。运行该脚本即开始处理数据。
 
-The preprocessed data will be in `$DATASET_ROOT/merge/image` and `$DATASET_ROOT/merge/label`.
+当fov为50时，`image_per_panorama`推荐为10；fov为60时推荐为9；fov为70时推荐为8。这样，相邻两张image的视野重叠大概正好是一半。这个切割的过程会将360°均分为`image_per_panorama`份，然后从一个随机的角度开始，每隔`360°/image_per_panorama`(取整)切出一张图。
 
-Then set `data_dir` as `$DATASET_ROOT/merge/image` in `tools/generate_list.py`, you can use it to randomly seperate the dataset to get `train_list.txt`, `test_list.txt`, `val_list.txt`.
+处理好的数据将位于`$DATASET_ROOT/merge/image`和`$DATASET_ROOT/merge/label`中。文件名的格式为`超市名称_原来的文件名_切割时的theta值_切割时的fov.jpg`和`超市名称_原来的文件名_切割时的theta值_切割时的fov.png`
 
-## Training
+然后在`tools/generate_list.py`的开头将`data_dir`设为`$DATASET_ROOT/merge/label`，就将按照4:1:1的比例随机产生`train_list.txt`, `test_list.txt`, `val_list.txt`。在此过程中，会检查每一张label图片，如果一张图片内像素值为255(意味着不属于任何已定义的类别)的像素比例大于百分之一，这张label和对应的image将不会包含在这三个list中。
 
-The directory tree should be look like this:
+## 训练
+
+目录结构如下
 ````bash
 $SEG_ROOT/data
 └── panorama
@@ -39,9 +52,42 @@ $SEG_ROOT/data
     └── test_list.txt
 ````
 
-Then prepare the pretrained imagenet parameters in `pretrained_models/`. Then you can use `python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml` to start training. In this case, you should prepare a `hrnet_w18_small_model_v1.pth` in `pretrained_models/`.
+当使用`experiments/panorama/train.yaml`作为配置文件时，对应的训练好的imagenet的权重应该位于`pretrained_models/`中。然后使用`python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml`。
 
-If you are using pytorch on Windows, you can use `python tools/windows_train.py --cfg=experiments/panorama/train.yaml`. This script doesn't support multi-gpu.
+如果是Windows系统的pytorch，因为Windows版的pytorch不自带distributed模块，可以使用`python tools/windows_train.py --cfg=experiments/panorama/train.yaml`来进行训练，这个脚本不支持多gpu训练。如果一定要在Windows上进行多gpu训练，需要从源码编译pytorch，并选上distributed模块。
+
+## 一些工具脚本
+
+### tools/analysisData.py
+
+在这个脚本开头处设置`data_dir`(也就是数据集的`image`和`label`文件夹所在的文件夹)。
+
+这个脚本会统计数据集的分布，最终输出很多行数据，每一行的构成如下：
+```
+类别名 数字标号 验证集中每张图片该类的平均像素数 测试集中每张图片该类的平均像素数 训练集中每张图片该类的平均像素数 验证集中每张图片该类的方差 测试集中每张图片该类的方差 训练集中每张图片该类的方差数
+```
+
+### tools/analysisResult.py
+
+在这个脚本开头处设置`data_dir`(也就是数据集的`image`和`label`文件夹所在的文件夹)，`result_dir`（也就是网络输出的predict图片所在的文件夹），`output_dir`（输出分析结果的文件夹，将在这个文件夹里自动检测并创建`easy`和`hard`文件夹），`topK`（也就是输出的图像数量）
+
+这个脚本会统计每一张predict上像素判断正确率，并且将正确率最高的topK张图片和结果存放在`easy`文件夹中，将正确率最低的topK张图片和结果存放在`hard`文件夹中。
+
+### tools/analysisVideo.py
+
+在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频；使用`--batch_size`指定跑一次网络处理多少帧视频；使用`--scale_factor`指定将原视频的尺寸放缩多少倍作为网络输入，比如0.5就是长宽各变为原来的一半再输入网络。
+
+最后会输出一个视频，左上角是原始内容，右上角是分割结果，左下角是每个像素点softmax以后分为当前结果类的概率（纯蓝代表0，纯红代表1），右下角是原始内容和分割结果的叠加。
+
+### tools/pipeline.py
+
+这个脚本是使用`utils/inference.py`的一个样例。`utils/inference.py`里面定义了以下三个用来推理的函数：
+
+`single_image_inference(network, image)`这个函数读入一个网络和一张已经预处理好的图片，可以返回一张predict图片
+
+`batch_inference(network, batch, output_probability=False)`这个函数读入一个网络和一个装有同样大小的预处理好的图片的tuple或者list，返回一个3维的numpy数组，即一个batch的predict图片。如果`output_probability=True`，那么还会额外返回一个batch的probability，即每一个像素都是一个0-1之间的概率值
+
+`inference(network, arguments)`这个函数读入一个网络和一个dict，arguments["input_list"]是一组输入图片的路径组成的tuple或者list；arguments["output_list"]是一组输出图片的路径组成的tuple或者list；arguments["preprocess_function"]定义了一个预处理函数，是可选项，如果dict中没有这一项会使用`utils/inference.py`中定义的默认预处理函数。
 
 # High-resolution networks (HRNets) for Semantic Segmentation 
 

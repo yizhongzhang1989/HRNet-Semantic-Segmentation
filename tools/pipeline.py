@@ -33,5 +33,6 @@ pretrained_dict = {k[6:]: v for k, v in pretrained_dict.items() if k[6:] in mode
 
 model_dict.update(pretrained_dict)
 model.load_state_dict(model_dict)
+model = model.cuda()
 
 inference(model, {"input_list": ["data/panorama/image/store10_location_01_0.jpg"], "output_list": ["D:/testNet/test.png"]})

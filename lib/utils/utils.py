@@ -151,35 +151,12 @@ def adjust_learning_rate(optimizer, base_lr, max_iters,
 
 def plot_confusion_matrix(cm):
     import matplotlib.pyplot as plt
-    label_map = {
-        0: "ground",
-        1: "ceiling",
-        2: "wall",
-        3: "pillar",
-        4: "door",
-        5: "window",
-        6: "stairs",
-        7: "escalator",
-        8: "elevator",
-        10: "layered_shelf",
-        11: "table_shelf",
-        13: "tall_freezer",
-        14: "short_freezer",
-        15: "cashier",
-        20: "hanging_object",
-        30: "other_object",
-        40: "removed_object"
-    }
     class_names = []
-    slices = []
-    for i in range(41):
-        if i in label_map:
-            slices.append(True)
-            class_names.append(label_map[i])
-        else:
-            slices.append(False)
-    cm = cm[slices]
-    cm = cm[:,slices]
+    with open("colorMap.txt", "r") as f:
+        for i, line in enumerate(f.readlines()):
+            tmp = line.split(" ")
+            classname = tmp[0]
+            class_names.append(classname)
     
     figure = plt.figure(figsize=(12, 12))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
