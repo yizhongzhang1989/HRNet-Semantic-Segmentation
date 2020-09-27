@@ -2,3 +2,6 @@ log
 output
 *.pyc
 data/panorama
+build
+.idea
+bin
