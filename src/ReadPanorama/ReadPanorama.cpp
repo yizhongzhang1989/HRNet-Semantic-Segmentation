@@ -211,15 +211,17 @@ public:
 			yz::Vec3f(100, -height, 100),
 			yz::Vec3f(100, -height, -100)
 		};
-		
+
 		ground_textures[tex_index].tex.Bind();
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		glBegin(GL_QUADS);
 		for (int i = 0; i < 4; i++) {
-			glVertex3f(v[i].x, v[i].y, v[i].z);
 			glTexCoord2f(v[i].x / ground_textures[tex_index].tex_size, v[i].z / ground_textures[tex_index].tex_size);
+			glVertex3f(v[i].x, v[i].y, v[i].z);
 		}
 		glEnd();
 
@@ -314,8 +316,8 @@ int main() {
 	win3d.CreateGLUTWindow();
 	glewInit();
 
-	pano_sphere.CreateTexture();
 	ground.CreateTextures();
+	pano_sphere.CreateTexture();
 
 	manager.EnterMainLoop();
 }
