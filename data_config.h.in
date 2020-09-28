@@ -1,0 +1,3 @@
+#pragma once
+
+static const char* ground_tex_dir="@GROUND_TEX_DIR@";

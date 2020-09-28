@@ -9,6 +9,13 @@ project (CppTools LANGUAGES C CXX)
 option(BUILD_ReadPanorama "Whether build ReadPanorama" ON)
 option(BUILD_TestShader "Whether build TestShader" ON)
 
+set(GROUND_TEX_DIR ${PROJECT_SOURCE_DIR}/ground_tex)
+configure_file(
+  "${PROJECT_SOURCE_DIR}/data_config.h.in"
+  "${PROJECT_BINARY_DIR}/data_config.h"
+  @ONLY
+  )
+
 ###############################################
 # Debug & Output options
 ###############################################
@@ -32,7 +39,10 @@ set(BIN_PATH "${CMAKE_SOURCE_DIR}/3rdParty/bin/win64;${CMAKE_SOURCE_DIR}/3rdPart
 # --------------------
 # Already included 3rdParty Library
 # --------------------
-include_directories(./3rdParty/inc)  
+include_directories(
+	./3rdParty/inc
+	${PROJECT_BINARY_DIR}
+	)  
 
 message(STATUS "==================================================")
 
@@ -47,6 +57,8 @@ elseif(${UNIX})
 	set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/linux64)
 	set(LIBRARY_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/linux64)
 endif(${MSVC})
+
+include_directories(./src/common)
 
 
 ###############################################
