@@ -85,7 +85,7 @@ $SEG_ROOT/data
 
 `single_image_inference(network, image)`这个函数读入一个网络和一张已经预处理好的图片，可以返回一张predict图片
 
-`batch_inference(network, batch, output_probability=False)`这个函数读入一个网络和一个装有同样大小的预处理好的图片的tuple或者list，返回一个3维的numpy数组，即一个batch的predict图片。如果`output_probability=True`，那么还会额外返回一个batch的probability，即每一个像素都是一个0-1之间的概率值
+`batch_inference(network, batch, output_max_probability=False, output_raw=False)`这个函数读入一个网络和一个装有同样大小的预处理好的图片的tuple或者list，返回一个3维的numpy数组，即一个batch的predict图片。如果`output_max_probability=True`，那么还会额外返回一个batch的probability，即每一个像素都是一个0-1之间的概率值。如果`output_max_probability=True`且`output_raw=True`，那么还会额外返回一个batch的原始输出，即没有经过softmax的输出。
 
 `inference(network, arguments)`这个函数读入一个网络和一个dict，arguments["input_list"]是一组输入图片的路径组成的tuple或者list；arguments["output_list"]是一组输出图片的路径组成的tuple或者list；arguments["preprocess_function"]定义了一个预处理函数，是可选项，如果dict中没有这一项会使用`utils/inference.py`中定义的默认预处理函数。
 
