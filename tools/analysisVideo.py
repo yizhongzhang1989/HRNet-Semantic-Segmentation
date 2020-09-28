@@ -39,7 +39,7 @@ def parse_args():
 
     return args
 
-def process_batch(network, batch, original):
+def process_batch(network, batch, original, outputVideo):
     predicts, probabilities = inference(model, batch, output_probability=True)
     for i, label in enumerate(predicts):
         result = np.zeros((h, w, 3), dtype=np.uint8)
@@ -99,7 +99,7 @@ while inputVideo.isOpened():
     batch.append(preprocess(frame))
     original.append(frame)
     if len(batch) == batch_size:
-        process_batch(model, batch, original)
+        process_batch(model, batch, original, outputVideo)
         batch = []
         original = []
 
