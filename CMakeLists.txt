@@ -6,6 +6,7 @@ project (CppTools LANGUAGES C CXX)
 ###############################################
 # Options
 ###############################################
+option(BUILD_Pano2Image "Whether build Pano2Image" ON)
 option(BUILD_ReadPanorama "Whether build ReadPanorama" ON)
 option(BUILD_TestShader "Whether build TestShader" ON)
 
@@ -64,6 +65,10 @@ include_directories(./src/common)
 ###############################################
 # Source
 ###############################################
+if (BUILD_Pano2Image)
+	add_subdirectory(src/Pano2Image)
+endif ()
+
 if (BUILD_ReadPanorama)
 	add_subdirectory(src/ReadPanorama)
 endif ()
