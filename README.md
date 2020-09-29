@@ -12,9 +12,9 @@
 
 在HRNet根目录下的`compressMap.txt`定义了关于各类别在实际使用中的信息。每一行是一类，格式如下：
 ```
-类别名称 R G B 原始数字标号1 原始数字标号2 原始数字标号3 ...
+类别名称 R G B 原始数字标号1 原始数字标号2 原始数字标号3
 ```
-通过该文件，可以将多个原始的类并为实际使用中的一个类，该实际使用中的类的数字标号为该类在`compressMap.txt`中的行号，从0开始。除了`tools/preprocessPanorama.py`和`tools/analysisData.py`这两个和原始类别数据有关的脚本，其他所有的脚本都使用的是`compressMap.txt`。
+原始数字标号的个数大于等于1即可。通过该文件，可以将多个原始的类并为实际使用中的一个类，该实际使用中的类的数字标号为该类在`compressMap.txt`中的行号，从0开始。除了`tools/preprocessPanorama.py`和`tools/analysisData.py`这两个和原始类别数据有关的脚本，其他所有的脚本都使用的是`compressMap.txt`。
 
 ## 关于读取图片
 
@@ -80,7 +80,7 @@ $SEG_ROOT/data
 
 ### tools/analysisOpticalFlow.py
 
-在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频;使用`--batch_size`指定每一次处理多少帧;使用`--scale_factor`指定视频的长和宽的放缩倍数，比如原本1440x1080的视频，指定scale_factor为0.7111111111，则每一帧会被resize为1080x768再输入网络;使用`--sliding_window`指定求平均的滑动窗口的长度
+在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频;使用`--scale_factor`指定视频的长和宽的放缩倍数，比如原本1440x1080的视频，指定scale_factor为0.7111111111，则每一帧会被resize为1080x768再输入网络;使用`--sliding_window`指定求平均的滑动窗口的长度
 
 最后会输出一个视频，左上角是不加光流做平滑的分类结果，右上角是加光流做平滑的分类结果，左下角是原始视频。
 
