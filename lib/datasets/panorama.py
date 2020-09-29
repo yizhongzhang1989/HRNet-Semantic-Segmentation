@@ -45,11 +45,11 @@ class Panorama(BaseDataset):
                 self.files.append(line.strip("\n"))
         
         self.compress_map = dict()
-        with open("colorMap.txt", "r") as f:
+        with open("compressMap.txt", "r") as f:
             for i, line in enumerate(f.readlines()):
                 tmp = line.split(" ")
-                label = int(tmp[1])
-                self.compress_map[label] = i
+                for label in tmp[4:]:
+                    self.compress_map[int(label)] = i
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)

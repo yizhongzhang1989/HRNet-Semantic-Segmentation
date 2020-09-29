@@ -43,7 +43,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
     # Training
     model.train()
     batch_time = AverageMeter()
-    ave_loss = AverageMeter()
+    #ave_loss = AverageMeter()
     tic = time.time()
     cur_iters = epoch*epoch_iters
     writer = writer_dict['writer']
@@ -76,7 +76,6 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
                                   base_lr,
                                   num_iters,
                                   i_iter+cur_iters)
-        #lr = optimizer.param_groups[0]['lr']
 
         if i_iter % config.PRINT_FREQ == 0 and rank == 0:
             #print_loss = ave_loss.average() / world_size
@@ -85,8 +84,8 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
                       epoch, num_epoch, i_iter, epoch_iters,
                       batch_time.average(), lr, loss / world_size)
             logging.info(msg)
-            logging.info(files)
-            logging.info(losses.mean(dim=[2,3])[0])
+            #logging.info(files)
+            #logging.info(losses.mean(dim=[2,3])[0])
             writer.add_scalar('train_loss', loss / world_size, global_steps)
             writer.add_scalar('learning_rate', lr, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1

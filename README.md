@@ -2,14 +2,25 @@
 
 ## colorMap
 
-在HRNet根目录下的`colorMap.txt`定义了关于各类别的信息。每一行是一类，格式如下：
+在HRNet根目录下的`colorMap.txt`定义了关于各类别的原始信息。每一行是一类，格式如下：
 ```
-类别名称 数字标号 R G B
+类别名称 原始数字标号 R G B
 ```
-数字标号不一定是连续的，比如目前只有17类，但是最大的标号是40。在处理数据的过程中，会自动将不连续的标号转换成连续的标号，从第0行开始，这一类在第几行就会被转换成几。只要用VS Code在整个目录里搜索`colorMap.txt`，就能找到所有使用了这一转换过程的地方，以后需要修改的时候只要在这些地方修改就可以了。
-由于接下来提到的脚本基本上都会读取这个`colorMap.txt`，所以这些脚本请在HRNet根目录下运行。
+原始数字标号不一定是连续的，比如目前只有17类，但是最大的标号是40。由于`colorMmap.txt`定义的是原始信息，所以它只在`tools/preprocessPanorama.py`和`tools/analysisData.py`中使用。
+
+## compressMap
+
+在HRNet根目录下的`compressMap.txt`定义了关于各类别在实际使用中的信息。每一行是一类，格式如下：
+```
+类别名称 R G B 原始数字标号1 原始数字标号2 原始数字标号3
+```
+原始数字标号的个数大于等于1即可。通过该文件，可以将多个原始的类并为实际使用中的一个类，该实际使用中的类的数字标号为该类在`compressMap.txt`中的行号，从0开始。除了`tools/preprocessPanorama.py`和`tools/analysisData.py`这两个和原始类别数据有关的脚本，其他所有的脚本都使用的是`compressMap.txt`。
+
+## 关于读取图片
 
 另外，各个脚本都是使用opencv读取的数据，所以读入的都是BGR图片，脚本中已经包含了输入时将BGR转为RGB的代码和输出时将RGB转为BGR的代码，所以不需要额外处理，如果想要写其他脚本，建议使用opencv读取数据以保持一致性。另外，opencv读取图片时路径里不能包含中文，所以处理数据集的时候超市的名字都应该改为英文。
+
+唯一的例外是`lib/dataset`中的各个数据库接口，由于HRNet原本使用的就是PIL，所以这里的数据库接口都是直接读取的RGB图片。
 
 ## 准备数据
 
@@ -67,6 +78,12 @@ $SEG_ROOT/data
 类别名 数字标号 验证集中每张图片该类的平均像素数 测试集中每张图片该类的平均像素数 训练集中每张图片该类的平均像素数 验证集中每张图片该类的方差 测试集中每张图片该类的方差 训练集中每张图片该类的方差数
 ```
 
+### tools/analysisOpticalFlow.py
+
+在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频;使用`--scale_factor`指定视频的长和宽的放缩倍数，比如原本1440x1080的视频，指定scale_factor为0.7111111111，则每一帧会被resize为1080x768再输入网络;使用`--sliding_window`指定求平均的滑动窗口的长度
+
+最后会输出一个视频，左上角是不加光流做平滑的分类结果，右上角是加光流做平滑的分类结果，左下角是原始视频。
+
 ### tools/analysisResult.py
 
 在这个脚本开头处设置`data_dir`(也就是数据集的`image`和`label`文件夹所在的文件夹)，`result_dir`（也就是网络输出的predict图片所在的文件夹），`output_dir`（输出分析结果的文件夹，将在这个文件夹里自动检测并创建`easy`和`hard`文件夹），`topK`（也就是输出的图像数量）
@@ -75,7 +92,7 @@ $SEG_ROOT/data
 
 ### tools/analysisVideo.py
 
-在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频；使用`--batch_size`指定跑一次网络处理多少帧视频；使用`--scale_factor`指定将原视频的尺寸放缩多少倍作为网络输入，比如0.5就是长宽各变为原来的一半再输入网络。
+在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频;使用`--batch_size`指定每一次处理多少帧;使用`--scale_factor`指定视频的长和宽的放缩倍数，比如原本1440x1080的视频，指定scale_factor为0.7111111111，则每一帧会被resize为1080x768再输入网络。
 
 最后会输出一个视频，左上角是原始内容，右上角是分割结果，左下角是每个像素点softmax以后分为当前结果类的概率（纯蓝代表0，纯红代表1），右下角是原始内容和分割结果的叠加。
 
@@ -85,7 +102,7 @@ $SEG_ROOT/data
 
 `single_image_inference(network, image)`这个函数读入一个网络和一张已经预处理好的图片，可以返回一张predict图片
 
-`batch_inference(network, batch, output_probability=False)`这个函数读入一个网络和一个装有同样大小的预处理好的图片的tuple或者list，返回一个3维的numpy数组，即一个batch的predict图片。如果`output_probability=True`，那么还会额外返回一个batch的probability，即每一个像素都是一个0-1之间的概率值
+`batch_inference(network, batch, output_max_probability=False, output_raw=False)`这个函数读入一个网络和一个装有同样大小的预处理好的图片的tuple或者list，返回一个3维的numpy数组，即一个batch的predict图片。如果`output_max_probability=True`，那么还会额外返回一个batch的probability，即每一个像素都是一个0-1之间的概率值。如果`output_max_probability=True`且`output_raw=True`，那么还会额外返回一个batch的原始输出，即没有经过softmax的输出。如果`output_max_probability=False`，那么`output_raw=True`不产生任何效果。
 
 `inference(network, arguments)`这个函数读入一个网络和一个dict，arguments["input_list"]是一组输入图片的路径组成的tuple或者list；arguments["output_list"]是一组输出图片的路径组成的tuple或者list；arguments["preprocess_function"]定义了一个预处理函数，是可选项，如果dict中没有这一项会使用`utils/inference.py`中定义的默认预处理函数。
 

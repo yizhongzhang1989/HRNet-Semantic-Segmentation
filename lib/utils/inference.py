@@ -25,18 +25,22 @@ def single_image_inference(network, image):
     predict = np.squeeze(predict).astype(np.uint8)
     return predict
 
-def batch_inference(network, batch, output_probability=False):
+def batch_inference(network, batch, output_max_probability=False, output_raw=False):
     h, w = batch[0].shape[1:]
     batch = np.array(batch)
     batch = torch.from_numpy(batch).cuda()
     predict = network.forward(batch)
     predict = F.upsample(predict, (h, w), mode='bilinear')
+    raw = predict
     predict = F.softmax(predict, dim=1)
     predict = predict.cpu().detach().numpy()
     label = np.argmax(predict, axis=1).astype(np.uint8)
-    if output_probability:
-        probability = np.max(predict, axis=1)
-        return label, probability
+    if output_max_probability:
+        max_probability = np.max(predict, axis=1)
+        if not output_raw:
+            return label, max_probability
+        else:
+            return label, max_probability, raw.cpu().detach().numpy()
     else:
         return label
 
