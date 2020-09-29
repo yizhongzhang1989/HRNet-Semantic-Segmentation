@@ -66,7 +66,7 @@ def producer(queue, args, config):
     inputVideo.release()
     queue.put(None)
 
-def consumer(queue, args, colormap, compress_map):
+def consumer(queue, args, compressedColorMap):
     total_frame, h, w, fps = queue.get()
     outputVideo = cv2.VideoWriter(args.output_video, cv2.VideoWriter_fourcc(*"DIVX"), fps, (w * 2, h * 2))
 
@@ -109,14 +109,14 @@ def consumer(queue, args, colormap, compress_map):
 
             label = np.argmax(this_raws_window[0][-1], axis=2)
             original_result = np.zeros((h, w, 3), dtype=np.uint8)
-            for key in compress_map:
-                original_result[label == compress_map[key]] = colormap[key]
+            for key in compressedColorMap:
+                original_result[label == key] = compressedColorMap[key]
 
             averaged_raw = np.sum([this_raws_window[i][-1] for i in range(args.sliding_window)], axis=0)
             averaged_label = np.argmax(averaged_raw, axis=2)
             averaged_result = np.zeros((h, w, 3), dtype=np.uint8)
-            for key in compress_map:
-                averaged_result[averaged_label == compress_map[key]] = colormap[key]
+            for key in compressedColorMap:
+                averaged_result[averaged_label == key] = compressedColorMap[key]
             
             compare = np.zeros((2*h, 2*w, 3), dtype=np.uint8)
             compare[:h,:w,:] = original_result[:,:,::-1]
@@ -130,21 +130,18 @@ def consumer(queue, args, colormap, compress_map):
             outputVideo.write(compare)
 
 if __name__ == '__main__':
-    colormap = dict()
-    compress_map = dict()
-    with open("colorMap.txt", "r") as f:
+    compressedColorMap = dict()
+    with open("compressMap.txt", "r") as f:
         for i, line in enumerate(f.readlines()):
             tmp = line.split(" ")
-            label = int(tmp[1])
-            r, g, b = int(tmp[2]), int(tmp[3]), int(tmp[4])
-            colormap[label] = np.array([r,g,b], dtype=np.int32)
-            compress_map[label] = i
+            r, g, b = int(tmp[1]), int(tmp[2]), int(tmp[3])
+            compressedColorMap[i] = np.array([r,g,b], dtype=np.int32)
 
     args = parse_args()
 
     queue = Queue(20)
     p = Thread(target=producer, args=(queue, args, config))
-    c = Thread(target=consumer, args=(queue, args, colormap, compress_map))
+    c = Thread(target=consumer, args=(queue, args, compressedColorMap))
 
     p.start()
     c.start()

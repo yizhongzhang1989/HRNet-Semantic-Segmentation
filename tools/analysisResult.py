@@ -3,20 +3,20 @@ import cv2
 import numpy as np
 import shutil
 
-data_dir = "D:/panorama/merge720x540"
+data_dir = "D:/panorama/merge"
 result_dir = "D:/testNet/test_val_results"
 output_dir = "D:/testNet"
 topK = 20
 
-colormap = dict()
-compress_map = dict()
-with open("colorMap.txt", "r") as f:
+compressMap = dict()
+compressedColorMap = dict()
+with open("compressMap.txt", "r") as f:
     for i, line in enumerate(f.readlines()):
         tmp = line.split(" ")
-        label = int(tmp[1])
-        r, g, b = int(tmp[2]), int(tmp[3]), int(tmp[4])
-        colormap[label] = np.array([r,g,b], dtype=np.int32)
-        compress_map[label] = i
+        r, g, b = int(tmp[1]), int(tmp[2]), int(tmp[3])
+        compressedColorMap[i] = np.array([r,g,b], dtype=np.int32)
+        for label in tmp[4:]:
+            compressMap[int(label)] = i
 
 if os.path.exists("%s/easy" % output_dir):
     shutil.rmtree("%s/easy" % output_dir)   
@@ -33,9 +33,9 @@ for filename in all_results:
     truth = cv2.imread("%s/label/%s" % (data_dir, filename), cv2.IMREAD_GRAYSCALE)
     h, w = predict.shape
     error = 0
-    for key in compress_map:
-        if key != compress_map[key]:
-            truth[truth == key] = compress_map[key]
+    for key in compressMap:
+        if key != compressMap[key]:
+            truth[truth == key] = compressMap[key]
     error = (predict != truth).sum()
     errors.append(error)
 
@@ -50,11 +50,11 @@ for i in np.argsort(-errors)[:topK]:
     h, w = truth.shape
     RGB_label = np.zeros([h, w, 3], dtype=np.uint8)
     mixed = np.zeros([h, w * 2, 3], dtype=np.uint8)
-    for key in colormap:
-        RGB_label[truth==key] = colormap[key]
+    for key in compressMap:
+        RGB_label[truth==key] = compressedColorMap[compressMap[key]]
     mixed[:,:w,:] = cv2.addWeighted(image, 0.3, RGB_label[:,:,::-1], 0.7, 0)
-    for key in colormap:
-        RGB_label[predict==compress_map[key]] = colormap[key]
+    for key in compressedColorMap:
+        RGB_label[predict==key] = compressedColorMap[key]
     mixed[:,w:,:] = RGB_label[:,:,::-1]
     cv2.imwrite("%s/hard/%s_compare.png" % (output_dir, name), mixed)
 
@@ -67,10 +67,10 @@ for i in np.argsort(errors)[:topK]:
     h, w = truth.shape
     RGB_label = np.zeros([h, w, 3], dtype=np.uint8)
     mixed = np.zeros([h, w * 2, 3], dtype=np.uint8)
-    for key in colormap:
-        RGB_label[truth==key] = colormap[key]
+    for key in compressMap:
+        RGB_label[truth==key] = compressedColorMap[compressMap[key]]
     mixed[:,:w,:] = cv2.addWeighted(image, 0.3, RGB_label[:,:,::-1], 0.7, 0)
-    for key in colormap:
-        RGB_label[predict==compress_map[key]] = colormap[key]
+    for key in compressedColorMap:
+        RGB_label[predict==key] = compressedColorMap[key]
     mixed[:,w:,:] = RGB_label[:,:,::-1]
     cv2.imwrite("%s/easy/%s_compare.png" % (output_dir, name), mixed)

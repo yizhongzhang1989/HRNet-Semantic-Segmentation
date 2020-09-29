@@ -10,15 +10,12 @@ from config import update_config
 from utils.inference import default_preprocess_function as preprocess
 from utils.inference import batch_inference as inference
 
-colormap = dict()
-compress_map = dict()
-with open("colorMap.txt", "r") as f:
+compressedColorMap = dict()
+with open("compressMap.txt", "r") as f:
     for i, line in enumerate(f.readlines()):
         tmp = line.split(" ")
-        label = int(tmp[1])
-        r, g, b = int(tmp[2]), int(tmp[3]), int(tmp[4])
-        colormap[label] = np.array([r,g,b], dtype=np.int32)
-        compress_map[label] = i
+        r, g, b = int(tmp[1]), int(tmp[2]), int(tmp[3])
+        compressedColorMap[i] = np.array([r,g,b], dtype=np.int32)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train segmentation network')
@@ -48,8 +45,8 @@ def process_batch(network, batch, original, outputVideo):
         probability[:,:,0] *= 1 - probabilities[i]
         probability[:,:,2] *= probabilities[i]
         probability = probability.astype(np.uint8)
-        for key in compress_map:
-            result[label == compress_map[key]] = colormap[key]
+        for key in compressedColorMap:
+            result[label == key] = compressedColorMap[key]
         result = result[:,:,::-1]
         compare = np.zeros((h * 2, w * 2, 3), dtype=np.uint8)
         compare[:h,:w,:] = original[i]
@@ -93,9 +90,6 @@ while inputVideo.isOpened():
     count += 1
     print(count, "/", total_frame)
     frame = cv2.resize(frame, (w, h))
-    #cv2.imshow("frame", frame)
-    #if cv2.waitKey(1) == ord('q'):
-    #    break
     batch.append(preprocess(frame))
     original.append(frame)
     if len(batch) == batch_size:

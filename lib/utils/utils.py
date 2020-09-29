@@ -152,7 +152,7 @@ def adjust_learning_rate(optimizer, base_lr, max_iters,
 def plot_confusion_matrix(cm):
     import matplotlib.pyplot as plt
     class_names = []
-    with open("colorMap.txt", "r") as f:
+    with open("compressMap.txt", "r") as f:
         for i, line in enumerate(f.readlines()):
             tmp = line.split(" ")
             classname = tmp[0]
