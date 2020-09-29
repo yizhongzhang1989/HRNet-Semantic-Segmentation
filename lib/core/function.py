@@ -43,7 +43,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
     # Training
     model.train()
     batch_time = AverageMeter()
-    ave_loss = AverageMeter()
+    #ave_loss = AverageMeter()
     tic = time.time()
     cur_iters = epoch*epoch_iters
     writer = writer_dict['writer']
@@ -76,7 +76,6 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
                                   base_lr,
                                   num_iters,
                                   i_iter+cur_iters)
-        #lr = optimizer.param_groups[0]['lr']
 
         if i_iter % config.PRINT_FREQ == 0 and rank == 0:
             #print_loss = ave_loss.average() / world_size
