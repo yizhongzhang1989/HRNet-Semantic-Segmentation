@@ -186,7 +186,7 @@ public:
 		}
 	}
 
-	void Draw(int tex_index = 0, float height = 1.45f) {
+	void Draw(int tex_index = 0, float tex_scale = 1.0f, float height = 1.45f) {
 		if (tex_index < 0 || tex_index >= ground_textures.size() || !ground_textures[tex_index].tex.tex_id)
 			return;
 
@@ -205,7 +205,7 @@ public:
 
 		glBegin(GL_QUADS);
 		for (int i = 0; i < 4; i++) {
-			glTexCoord2f(v[i].x / ground_textures[tex_index].tex_size, v[i].z / ground_textures[tex_index].tex_size);
+			glTexCoord2f(v[i].x / ground_textures[tex_index].tex_size * tex_scale, v[i].z / ground_textures[tex_index].tex_size * tex_scale);
 			glVertex3f(v[i].x, v[i].y, v[i].z);
 		}
 		glEnd();

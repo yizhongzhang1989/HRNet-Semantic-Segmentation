@@ -22,10 +22,11 @@ int			draw_label_flag = 0;
 
 
 void print3d() {
-	glColor3f(1, 0, 0);
-	yz::opengl::printInfo(0, 0, "fov_y=%f", win3d.fovy);
-	yz::opengl::printInfo(0, 20, "spin_x=%f", win3d.spin_x);
-	yz::opengl::printInfo(0, 40, "spin_y=%f", win3d.spin_y);
+	glColor3f(1, 0, 1);
+	yz::opengl::printInfo(0, 0, "%s", panorama_image_label[panorama_index].first.c_str());
+	yz::opengl::printInfo(0, 20, "fov_y=%f", win3d.fovy);
+	yz::opengl::printInfo(0, 40, "spin_x=%f", win3d.spin_x);
+	yz::opengl::printInfo(0, 60, "spin_y=%f", win3d.spin_y);
 }
 
 void draw3d() {

@@ -7,40 +7,49 @@
 #include <FreeImage.h>
 #include <yzLib/yz_lib.h>
 
+#include "ArgsParser.h"
 #include "Panorama.h"
 
 yz::opengl::DemoWindowManager	manager;
-yz::opengl::DemoWindow3D		win3d(0, 0, 1024, 768);
-
+yz::opengl::DemoWindow3D		win3d;
+yz::opengl::FBO					fbo;
 
 PanoSphere	pano_sphere;
 Ground		ground;
-int			ground_tex_index = 0;
-int			panorama_index = 0;
 std::vector<std::pair<std::string, std::string>>	panorama_image_label;
-int			draw_label_flag = 0;
 
+int			sample_index = 0;
+int			panorama_index = 0;
+int			ground_tex_index = 0;
+float		ground_tex_scale = 1.0f;
+int			samples_per_panorama = 12;
+int			image_width = 1024;
+int			image_height = 768;
+float		fov_min = 90.0f;
+float		fov_max = 107.0f;
+bool		rand_tilt = true;
+bool		rand_ground = true;
 
-void print3d() {
-	glColor3f(1, 0, 0);
-	yz::opengl::printInfo(0, 0, "fov_y=%f", win3d.fovy);
-	yz::opengl::printInfo(0, 20, "spin_x=%f", win3d.spin_x);
-	yz::opengl::printInfo(0, 40, "spin_y=%f", win3d.spin_y);
-}
+bool		draw_label_flag = false;
+const char* output_dir = "E:/StoreSemanticLabelingData";
 
 void draw3d() {
 	glDisable(GL_LIGHTING);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glColor4f(1, 1, 1, 1);
-	ground.Draw(ground_tex_index);
-
-	glColor4f(1, 1, 1, 1);
-	if (draw_label_flag)
+	if (draw_label_flag) {
+		glColor4f(1, 1, 1, 1);
 		pano_sphere.DrawLabel();
-	else
+	}
+	else {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glColor4f(1, 1, 1, 1);
+		ground.Draw(ground_tex_index, ground_tex_scale);
+
+		glColor4f(1, 1, 1, 1);
 		pano_sphere.DrawColor(ground_tex_index >= 0);
+	}
 }
 
 void motion(int x, int y) {
@@ -50,7 +59,6 @@ void motion(int x, int y) {
 	}
 	else if (win3d.mouse_state[GLUT_RIGHT_BUTTON] == GLUT_DOWN) {
 		win3d.fovy += float(y - win3d.old_y) / 10;
-
 		win3d.DefaultReshapeFunc(win3d.win_width, win3d.win_height);
 	}
 
@@ -90,15 +98,95 @@ void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
 		exit(0);
-	case ' ':
-		draw_label_flag = !draw_label_flag;
-		break;
 	}
 
 	glutPostRedisplay();
 }
 
-int main() {
+void idle() {
+	if (panorama_index >= panorama_image_label.size())
+		return;
+
+	//	calculate render parameters
+	float fovy = yz::randFloatingPointNumber(fov_min, fov_max);
+	win3d.fovy = fovy;
+
+	float spinx = yz::randFloatingPointNumber(0.0f, 360.0f);
+	win3d.spin_x = spinx;
+
+	float max_tilt = -0.529f * fovy + 64.603f;
+	float spiny = yz::randFloatingPointNumber(-max_tilt, max_tilt);
+	win3d.spin_y = rand_tilt ? spiny : 0.0f;
+
+	ground_tex_index = rand_ground ? yz::randNumber(0, int(ground.ground_textures.size())) - 1 : -1;
+
+	ground_tex_scale = yz::randFloatingPointNumber(0.5f, 1.5f);
+
+	//	render label
+	draw_label_flag = true;
+	fbo.BeginRender();
+
+	yz::opengl::pushAllAttributesAndMatrices();
+	win3d.DefaultReshapeFunc(win3d.win_width, win3d.win_height);
+	win3d.auto_swap_buffers = 0;
+	win3d.DefaultDisplayFunc();
+	win3d.auto_swap_buffers = 1;
+	yz::opengl::popAllAttributesAndMatrices();
+	
+	std::vector<yz::uchar3> label;
+	label.resize(win3d.win_width * win3d.win_height);
+	glReadPixels(0, 0, win3d.win_width, win3d.win_height, GL_RGB, GL_UNSIGNED_BYTE, &label[0].x);
+	fbo.EndRender();
+
+	//	render image
+	draw_label_flag = false;
+	fbo.BeginRender();
+
+	yz::opengl::pushAllAttributesAndMatrices();
+	win3d.DefaultReshapeFunc(win3d.win_width, win3d.win_height);
+	win3d.auto_swap_buffers = 0;
+	win3d.DefaultDisplayFunc();
+	win3d.auto_swap_buffers = 1;
+	yz::opengl::popAllAttributesAndMatrices();
+
+	std::vector<yz::uchar3> image;
+	image.resize(win3d.win_width * win3d.win_height);
+	glReadPixels(0, 0, win3d.win_width, win3d.win_height, GL_RGB, GL_UNSIGNED_BYTE, &image[0].x);
+	fbo.EndRender();
+
+	//	dump data
+	for (int j = 0; j < win3d.win_height / 2; j++) {
+		for (int i = 0; i < win3d.win_width; i++) {
+			yz::mySwap(label[j * win3d.win_width + i], label[(win3d.win_height - 1 - j) * win3d.win_width + i]);
+			yz::mySwap(image[j * win3d.win_width + i], image[(win3d.win_height - 1 - j) * win3d.win_width + i]);
+		}
+	}
+
+	char label_filename[256], image_filename[256];
+	sprintf(label_filename, "%s/%d.png", output_dir, sample_index);
+	sprintf(image_filename, "%s/%d.jpg", output_dir, sample_index);
+	yz::image::writeImageToFile(label_filename, &label[0].x, win3d.win_width, win3d.win_height, 24);
+	yz::image::writeImageToFile(image_filename, &image[0].x, win3d.win_width, win3d.win_height, 24);
+
+	//	prepare next frame
+	sample_index++;
+	int next_panorama_index = sample_index / samples_per_panorama;
+	if (next_panorama_index != panorama_index && next_panorama_index < panorama_image_label.size()) {
+		panorama_index = next_panorama_index;
+		pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
+		pano_sphere.color_tex.LoadPtrToTexture();
+		pano_sphere.label_tex.LoadPtrToTexture();
+
+		std::cout << "next panorama index: " << panorama_index 
+			<< "  current dumped: " << sample_index
+			<< std::endl;
+	}
+
+	glutPostRedisplay();
+}
+
+int main(int argc, const char** argv) {
+	//	initialize data
 	std::string uv_sphere_filename = yz::utils::getFileNameCombineDirentory(ground_tex_dir, "../uv_sphere.obj");
 	std::string pano_list_filename = yz::utils::getFileNameCombineDirentory(ground_tex_dir, "../bin/panorama_image_label_list.txt");
 	std::ifstream	pano_list_file(pano_list_filename);
@@ -117,18 +205,32 @@ int main() {
 	pano_sphere.ReadGeometry(uv_sphere_filename.c_str());
 	pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
 
+	//	read arguments
+	ArgsParser	parser(argc, argv);
+	parser.TryGetArgment("samples_per_panorama", samples_per_panorama);
+	parser.TryGetArgment("image_width", image_width);
+	parser.TryGetArgment("image_height", image_height);
+	parser.TryGetArgment("fov_min", fov_min);
+	parser.TryGetArgment("fov_max", fov_max);
+	parser.TryGetArgment("rand_tilt", rand_tilt);
+	parser.TryGetArgment("rand_ground", rand_ground);
+
+	//	create context
 	win3d.eye_z = 0;
 	win3d.fovy = 100.0f;
 	win3d.motionFunc = motion;
 	win3d.keyboardFunc = keyboard;
 	win3d.specialFunc = special;
+	win3d.SetWindowPositionSize(0, 0, image_width, image_height);
 	win3d.SetDraw(draw3d);
-	win3d.SetDrawAppend(print3d);
 	win3d.CreateGLUTWindow();
 	glewInit();
+
+	fbo.InitFBO(image_width, image_height);
 
 	ground.CreateTextures();
 	pano_sphere.CreateTexture();
 
+	manager.AddIdleFunc(idle);
 	manager.EnterMainLoop();
 }

@@ -1,6 +1,6 @@
 import os
 
-data_dir = "E:/StoreSemanticLabelingData"
+data_dir = "E:/StorePanoramaSemanticLabelingData"
 
 
 def query_dir(dir):
