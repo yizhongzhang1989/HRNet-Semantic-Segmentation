@@ -37,7 +37,7 @@ def parse_args():
     return args
 
 def process_batch(network, batch, original, outputVideo):
-    predicts, probabilities = inference(model, batch, output_probability=True)
+    predicts, probabilities = inference(model, batch, output_max_probability=True)
     for i, label in enumerate(predicts):
         result = np.zeros((h, w, 3), dtype=np.uint8)
         probability = np.zeros((h, w, 3), dtype=np.float32)
