@@ -19,7 +19,6 @@ def parse_args():
     parser.add_argument("--pth", help="pth file name", type=str, default="D:/testNet/final_state.pth")
     parser.add_argument("--input_video", help="input video file name", type=str, default="D:/testNet/input1.mp4")
     parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="D:/testNet/optical_flow1.avi")
-    parser.add_argument("--batch_size", help="frames per batch", type=int, default=4)
     parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.71111111111111111111)
     parser.add_argument("--sliding_window", type=int, default=5)
     parser.add_argument('opts',
