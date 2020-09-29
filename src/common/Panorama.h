@@ -44,6 +44,9 @@ public:
 				else
 					color_img[pid].w = 255;
 			}
+
+		delete[] color_img_ptr;
+		delete[] label_img_ptr;
 	}
 
 	void CreateTexture() {
