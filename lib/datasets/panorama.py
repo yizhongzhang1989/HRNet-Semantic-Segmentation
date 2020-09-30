@@ -92,7 +92,7 @@ class Panorama(BaseDataset):
                 label[label == key] = self.compress_map[key]
         return label
     
-    def random_motion_blur(self, iamge):
+    def random_motion_blur(self, image):
         choice = random.randint(0, 10)
         if choice == 9:
             return image
