@@ -69,12 +69,7 @@ def consumer(queue, args, compressedColorMap):
     total_frame, h, w, fps = queue.get()
     outputVideo = cv2.VideoWriter(args.output_video, cv2.VideoWriter_fourcc(*"DIVX"), fps, (w * 2, h * 2))
 
-    map_x = np.zeros([h,w], dtype=np.float32)
-    map_y = np.zeros([h,w], dtype=np.float32)
-    for i in range(h):
-        map_y[i,:] = i
-    for i in range(w):
-        map_x[:,i] = i
+    map_y, map_x = np.indices([h, w], dtype=np.float32)
 
     raws_window = []
     frames_window = []
