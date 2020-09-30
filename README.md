@@ -20,7 +20,7 @@
 
 另外，各个脚本都是使用opencv读取的数据，所以读入的都是BGR图片，脚本中已经包含了输入时将BGR转为RGB的代码和输出时将RGB转为BGR的代码，所以不需要额外处理，如果想要写其他脚本，建议使用opencv读取数据以保持一致性。另外，opencv读取图片时路径里不能包含中文，所以处理数据集的时候超市的名字都应该改为英文。
 
-唯一的例外是`lib/dataset`中的各个数据库接口，由于HRNet原本使用的就是PIL，所以这里的数据库接口都是直接读取的RGB图片。
+唯一的例外是`lib/dataset`中的里面的`save_pred`方法，由于HRNet在这里原本使用的就是PIL，所以`lib/dataset/panorama.py`里的`save_pred`用的也是PIL存的图片。
 
 ## 准备数据
 
