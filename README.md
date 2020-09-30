@@ -46,6 +46,22 @@ $DATASET_ROOT/
 
 然后在`tools/generate_list.py`的开头将`data_dir`设为`$DATASET_ROOT/merge/label`，就将按照4:1:1的比例随机产生`train_list.txt`, `test_list.txt`, `val_list.txt`。在此过程中，会检查每一张label图片，如果一张图片内像素值为255(意味着不属于任何已定义的类别)的像素比例大于百分之一，这张label和对应的image将不会包含在这三个list中。
 
+## 关于online的数据预处理
+
+目前预处理在`lib/dataset/panorama.py`里进行了online的数据预处理，过程如下：
+
+首先是在`__getitem__()`里通过opencv读取图片
+
+然后原始label数据会通过`compress_label()`进行类别合并
+
+原始image会通过`random_motion_blur()`加运动模糊，有十分之二的几率不加模糊；有十分之一的几率朝一个方向进行运动模糊，总共预设了八个方向。
+
+通过`random_motion_blur()`以后，会进行`barrel_distortion()`，这里面通过opencv的remap来实现的，remap里使用的map函数是`x'=x(1+k1*r^2+k2*r^4)`的反函数的一个近似，在程序里就是用lambda定义的f，由于这个过程直接做整个图片的大小会变，所以用了一个`fit_scale`保证四个角在映射以后还在四个角上。
+
+通过`barrel_distortion()`以后，image会进行一个`input_transform()`，这个方法是基类`base_dataset`的方法，将0-255的像素值映射为均值为0方差为1的数据，然后再进行`transpose()`将通道数调整到最前面。
+
+目前没有做任何随机的crop。
+
 ## 训练
 
 目录结构如下
@@ -83,6 +99,10 @@ $SEG_ROOT/data
 在命令行使用这个脚本的时候，使用`--cfg`指定定义网络结构的`.yaml`文件；使用`--pth`指定权重文件；使用`--input_video`指定需要分析的视频文件;使用`--output_video`指定输出文件(带路径)，目前只支持输出avi格式的视频;使用`--scale_factor`指定视频的长和宽的放缩倍数，比如原本1440x1080的视频，指定scale_factor为0.7111111111，则每一帧会被resize为1080x768再输入网络;使用`--sliding_window`指定求平均的滑动窗口的长度
 
 最后会输出一个视频，左上角是不加光流做平滑的分类结果，右上角是加光流做平滑的分类结果，左下角是原始视频。
+
+我这里用的滑动平均的方法大致如下：
+a/b/c/d/e是滑动窗口为5的一组帧，会计算出四个光流a2b,b2c,c2d,d2e，将b/c/d/e的每一个像素通过这四个光流remap到a时刻的位置，得到b'/c'/d'/e'，这样就与a里面的像素位置一一对应，缺失的部分是0
+然后将a/b'/c'/d'/e'求平均（这里每个像素存储的是未经过softmax的每类原始输出），再求argmax(不需要softmax了，因为softmax是单调的)即得到每个像素的类别。
 
 ### tools/analysisResult.py
 
