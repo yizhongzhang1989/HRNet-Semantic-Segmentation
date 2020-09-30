@@ -149,15 +149,16 @@ def adjust_learning_rate(optimizer, base_lr, max_iters,
     optimizer.param_groups[0]['lr'] = lr
     return lr
 
+
+class_names = []
+with open("compressMap.txt", "r") as f:
+    for i, line in enumerate(f.readlines()):
+        tmp = line.split(" ")
+        classname = tmp[0]
+        class_names.append(classname)
+
 def plot_confusion_matrix(cm):
-    import matplotlib.pyplot as plt
-    class_names = []
-    with open("compressMap.txt", "r") as f:
-        for i, line in enumerate(f.readlines()):
-            tmp = line.split(" ")
-            classname = tmp[0]
-            class_names.append(classname)
-    
+    import matplotlib.pyplot as plt    
     figure = plt.figure(figsize=(12, 12))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title("Confusion matrix")
