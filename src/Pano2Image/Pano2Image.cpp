@@ -14,9 +14,16 @@ yz::opengl::DemoWindowManager	manager;
 yz::opengl::DemoWindow3D		win3d;
 yz::opengl::FBO					fbo;
 
+bool		draw_label_flag = false;
 PanoSphere	pano_sphere;
 Ground		ground;
 std::vector<std::pair<std::string, std::string>>	panorama_image_label;
+
+//	====================================
+//	parameters to control
+std::string input_panorama_image_label_filename;
+std::string	output_dir;
+int			start_index = 0;
 
 int			sample_index = 0;
 int			panorama_index = 0;
@@ -29,9 +36,8 @@ float		fov_min = 90.0f;
 float		fov_max = 107.0f;
 bool		rand_tilt = true;
 bool		rand_ground = true;
+//	====================================
 
-bool		draw_label_flag = false;
-const char* output_dir = "E:/StoreSemanticLabelingData";
 
 void draw3d() {
 	glDisable(GL_LIGHTING);
@@ -104,8 +110,10 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void idle() {
-	if (panorama_index >= panorama_image_label.size())
-		return;
+	if (panorama_index >= panorama_image_label.size()) {
+		std::cout << "Pano2Image completed, " << sample_index << " image-label pairs created" << std::endl;
+		exit(0);
+	}
 
 	//	calculate render parameters
 	float fovy = yz::randFloatingPointNumber(fov_min, fov_max);
@@ -163,8 +171,8 @@ void idle() {
 	}
 
 	char label_filename[256], image_filename[256];
-	sprintf(label_filename, "%s/%d.png", output_dir, sample_index);
-	sprintf(image_filename, "%s/%d.jpg", output_dir, sample_index);
+	sprintf(label_filename, "%s/%d.png", output_dir, sample_index + start_index);
+	sprintf(image_filename, "%s/%d.jpg", output_dir, sample_index + start_index);
 	yz::image::writeImageToFile(label_filename, &label[0].x, win3d.win_width, win3d.win_height, 24);
 	yz::image::writeImageToFile(image_filename, &image[0].x, win3d.win_width, win3d.win_height, 24);
 
@@ -186,34 +194,61 @@ void idle() {
 }
 
 int main(int argc, const char** argv) {
-	//	initialize data
-	std::string uv_sphere_filename = yz::utils::getFileNameCombineDirentory(ground_tex_dir, "../uv_sphere.obj");
-	std::string pano_list_filename = yz::utils::getFileNameCombineDirentory(ground_tex_dir, "../bin/panorama_image_label_list.txt");
-	std::ifstream	pano_list_file(pano_list_filename);
-	if (pano_list_file.is_open()) {
-		std::string image_filename, label_filename;
-		while (pano_list_file >> image_filename >> label_filename) {
-			panorama_image_label.push_back(std::pair<std::string, std::string>(image_filename, label_filename));
-		}
-	}
-	if (panorama_image_label.empty()) {
-		std::cout << "no panorama" << std::endl;
-		return 0;
-	}
-
-	ground.ReadTextures(ground_tex_dir);
-	pano_sphere.ReadGeometry(uv_sphere_filename.c_str());
-	pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
-
 	//	read arguments
 	ArgsParser	parser(argc, argv);
+	parser.TryGetArgment("input_panorama_image_label_filename", input_panorama_image_label_filename);
+	parser.TryGetArgment("output_dir", output_dir);
+	parser.TryGetArgment("start_index", start_index);
 	parser.TryGetArgment("samples_per_panorama", samples_per_panorama);
 	parser.TryGetArgment("image_width", image_width);
 	parser.TryGetArgment("image_height", image_height);
 	parser.TryGetArgment("fov_min", fov_min);
 	parser.TryGetArgment("fov_max", fov_max);
 	parser.TryGetArgment("rand_tilt", rand_tilt);
-	parser.TryGetArgment("rand_ground", rand_ground);
+	parser.TryGetArgment("rand_ground", rand_ground);	
+
+	std::cout << "Pano2Image, arguments:" << std::endl
+		<< "\tinput_panorama_image_label_filename: " << input_panorama_image_label_filename << std::endl
+		<< "\toutput_dir: " << output_dir << std::endl
+		<< "\tstart_index: " << start_index << std::endl
+		<< "\tsamples_per_panorama: " << samples_per_panorama << std::endl
+		<< "\timage_width: " << image_width << std::endl
+		<< "\timage_height: " << image_height << std::endl
+		<< "\tfov_min: " << fov_min << std::endl
+		<< "\tfov_max: " << fov_max << std::endl
+		<< "\trand_tilt: " << rand_tilt << std::endl
+		<< "\trand_ground: " << rand_ground << std::endl;
+
+	if (input_panorama_image_label_filename.empty()) {
+		std::cout << "error: Pano2Image, no input_panorama_image_label_filename" << std::endl;
+		return 0;
+	}
+	if (output_dir.empty()) {
+		std::cout << "error: Pano2Image, no output_dir" << std::endl;
+		return 0;
+	}
+
+	//	initialize data	
+	std::ifstream	pano_list_file(input_panorama_image_label_filename);
+	if (pano_list_file.is_open()) {
+		std::string image_filename, label_filename;
+		while (pano_list_file >> image_filename >> label_filename) {
+			panorama_image_label.push_back(std::pair<std::string, std::string>(image_filename, label_filename));
+		}
+	}
+	else {
+		std::cout << "error: Pano2Image, failed to open " << input_panorama_image_label_filename << std::endl;
+		return 0;
+	}
+	if (panorama_image_label.empty()) {
+		std::cout << "error: Pano2Image, no panorama" << std::endl;
+		return 0;
+	}
+
+	std::string uv_sphere_filename = yz::utils::getFileNameCombineDirentory(ground_tex_dir, "../uv_sphere.obj");
+	pano_sphere.ReadGeometry(uv_sphere_filename.c_str());
+	pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
+	ground.ReadTextures(ground_tex_dir);
 
 	//	create context
 	win3d.eye_z = 0;
