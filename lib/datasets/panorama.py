@@ -94,7 +94,7 @@ class Panorama(BaseDataset):
     
     def random_motion_blur(self, image):
         choice = random.randint(0, 10)
-        if choice == 9:
+        if choice >= 8:
             return image
         else:
             return cv2.filter2D(image, -1, self.motion_blur_kernels[choice])
