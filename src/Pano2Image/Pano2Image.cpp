@@ -171,23 +171,29 @@ void idle() {
 	}
 
 	char label_filename[256], image_filename[256];
-	sprintf(label_filename, "%s/%d.png", output_dir, sample_index + start_index);
-	sprintf(image_filename, "%s/%d.jpg", output_dir, sample_index + start_index);
+	sprintf(label_filename, "%s/%d.png", output_dir.c_str(), sample_index + start_index);
+	sprintf(image_filename, "%s/%d.jpg", output_dir.c_str(), sample_index + start_index);
 	yz::image::writeImageToFile(label_filename, &label[0].x, win3d.win_width, win3d.win_height, 24);
 	yz::image::writeImageToFile(image_filename, &image[0].x, win3d.win_width, win3d.win_height, 24);
 
 	//	prepare next frame
 	sample_index++;
 	int next_panorama_index = sample_index / samples_per_panorama;
-	if (next_panorama_index != panorama_index && next_panorama_index < panorama_image_label.size()) {
-		panorama_index = next_panorama_index;
-		pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
-		pano_sphere.color_tex.LoadPtrToTexture();
-		pano_sphere.label_tex.LoadPtrToTexture();
+	if (next_panorama_index != panorama_index) {
+		if (next_panorama_index < panorama_image_label.size()) {
+			panorama_index = next_panorama_index;
+			pano_sphere.ReadTexture(panorama_image_label[panorama_index].first.c_str(), panorama_image_label[panorama_index].second.c_str());
+			pano_sphere.color_tex.LoadPtrToTexture();
+			pano_sphere.label_tex.LoadPtrToTexture();
 
-		std::cout << "next panorama index: " << panorama_index 
-			<< "  current dumped: " << sample_index
-			<< std::endl;
+			std::cout << "next panorama index: " << panorama_index
+				<< "  current dumped: " << sample_index
+				<< std::endl;
+		}
+		else {
+			std::cout << "Pano2Image completed, " << sample_index << " image-label pairs created" << std::endl;
+			exit(0);
+		}
 	}
 
 	glutPostRedisplay();

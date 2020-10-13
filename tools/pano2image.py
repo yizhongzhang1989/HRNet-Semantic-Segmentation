@@ -1,9 +1,40 @@
 import os
 import subprocess
+from multiprocessing import Process
 
 thread_num = 8
 panorama_dir = "E:/StorePanoramaSemanticLabelingData"
-output_dir = "E:/StoreSemanticLabelingData2"
+output_dir = "E:/StoreSemanticLabelingData"
+samples_per_panorama = 12
+image_width = 1024
+image_height = 768
+fov_min = 90.0
+fov_max = 107.0
+rand_tilt = True
+rand_ground = True
+
+
+def quote_string(in_str):
+    if in_str == '':
+        return ''
+    if in_str[0] == '"' and in_str[-1] == '"':
+        return in_str
+
+    if detect_special_chars(in_str) != '':
+        return '"' + in_str + '"'
+
+    return in_str
+
+
+def detect_special_chars(in_str):
+    out_special_chars = ''
+
+    special_chars = [' ', '&']
+    for c in special_chars:
+        if c in in_str:
+            out_special_chars = out_special_chars + c
+
+    return out_special_chars
 
 
 def list_panorama_pairs(dir):
@@ -38,6 +69,7 @@ def save_panorama_pairs(image_label_pair, output_dir, chunk_num=thread_num):
         os.mkdir(output_dir)
 
     output_filenames = []
+    output_pair_num = []
 
     chunk_size = int(len(image_label_pair) / chunk_num)
     if chunk_size * chunk_num != len(image_label_pair):
@@ -53,34 +85,56 @@ def save_panorama_pairs(image_label_pair, output_dir, chunk_num=thread_num):
             print('write %s with %d pairs' % (output_path, len(chunk)))
             f.close()
             output_filenames.append(output_path)
+            output_pair_num.append(len(chunk))
 
-    return output_filenames
+    return output_filenames, output_pair_num
 
 
 def pano_2_images(pano_list_filename,
                   output_dir,
-                  start_idx=0,
+                  start_index=0,
                   samples_per_panorama=12,
-                  image_width=1042,
+                  image_width=1024,
                   image_height=768,
                   fov_min= 90.0,
                   fov_max=107.0,
                   rand_tilt=True,
                   rand_ground=True):
-    """
-
-    """
-    curr_path = os.path.dirname(os.path.realpath(__file__))
-    root_path = curr_path + '/..'
-
-    cmd = 'cmd /c PATH=%%PATH%%;%s/3rdParty/bin/win64;%s/3rdParty/bin/win32;%s/bin/Release' % (root_path, root_path, root_path)
-    cmd = cmd + ' && echo %%PATH%% &&  Pano2Image'
-    #print(cmd)
+    cmd = 'Pano2Image'
+    cmd = cmd + ' -input_panorama_image_label_filename ' + quote_string(pano_list_filename)
+    cmd = cmd + ' -output_dir ' + output_dir
+    cmd = cmd + ' -start_index %d' % start_index
+    cmd = cmd + ' -samples_per_panorama %d' % samples_per_panorama
+    cmd = cmd + ' -image_width %d' % image_width
+    cmd = cmd + ' -image_height %d' % image_height
+    cmd = cmd + ' -fov_min %f' % fov_min
+    cmd = cmd + ' -fov_max %f' % fov_max
+    if not rand_tilt:
+        cmd = cmd + ' -rand_tilt false'
+    if not rand_ground:
+        cmd = cmd + ' -rand_ground false'
+    print(cmd)
     subprocess.call(cmd, shell=True)
 
 
+if __name__ == '__main__':
+    list = list_panorama_pairs(panorama_dir)
+    output_filenames, output_pair_num = save_panorama_pairs(list, output_dir, thread_num)
 
-#list = list_panorama_pairs(panorama_dir)
-#save_panorama_pairs(list, output_dir, thread_num)
-pano_2_images('a', 'b')
+    acc_pair_num = 0
+    for i in range(len(output_filenames)):
+        start_idx = acc_pair_num *  samples_per_panorama
 
+        p = Process(target=pano_2_images, args=(output_filenames[i],
+                                                output_dir,
+                                                start_idx,
+                                                samples_per_panorama,
+                                                image_width,
+                                                image_height,
+                                                fov_min,
+                                                fov_max,
+                                                rand_tilt,
+                                                rand_ground))
+        p.start()
+
+        acc_pair_num += output_pair_num[i]
