@@ -1,3 +1,7 @@
 log
 output
 *.pyc
+data/lip
+.vscode
+StoreSemanticTrainingData
+__pycache__
