@@ -35,4 +35,12 @@ model_dict.update(pretrained_dict)
 model.load_state_dict(model_dict)
 model = model.cuda()
 
-inference(model, {"input_list": ["data/panorama/image/store10_location_01_0.jpg"], "output_list": ["D:/testNet/test.png"]})
+
+test_name = 'data/panorama/test_list.txt'
+with open(test_name, 'r') as f:
+    test_list = f.readlines()
+
+input_list = ['data/panorama/image/%s.jpg' % name[:-1] for name in test_list]
+output_list = ['data/panorama/predict/%s.png' % name[:-1] for name in test_list]
+
+inference(model, {"input_list": input_list, "output_list": output_list})

@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import torch
 from torch.nn import functional as F
+from tqdm import tqdm
 
 def default_preprocess_function(x):
     x = np.array(x).astype(np.float32)
@@ -52,7 +53,7 @@ def inference(network, arguments):
     else:
         preprocess_function = default_preprocess_function
 
-    for i, image_name in enumerate(input_list):
+    for i, image_name in enumerate(tqdm(input_list)):
         image = cv2.imread(image_name, cv2.IMREAD_COLOR)
         image = preprocess_function(image)
         predict = single_image_inference(network, image)

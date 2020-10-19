@@ -3,9 +3,9 @@ import cv2
 import numpy as np
 import shutil
 
-data_dir = "D:/panorama/merge"
-result_dir = "D:/testNet/test_val_results"
-output_dir = "D:/testNet"
+data_dir = "data/panorama"
+result_dir = "data/panorama/predict"
+output_dir = "data/panorama/output"
 topK = 20
 
 compressMap = dict()
@@ -22,8 +22,8 @@ if os.path.exists("%s/easy" % output_dir):
     shutil.rmtree("%s/easy" % output_dir)   
 if os.path.exists("%s/hard" % output_dir):
     shutil.rmtree("%s/hard" % output_dir)
-os.mkdir("%s/easy" % output_dir)
-os.mkdir("%s/hard" % output_dir)
+os.makedirs("%s/easy" % output_dir)
+os.makedirs("%s/hard" % output_dir)
 
 all_results = os.listdir(result_dir)
 errors = []
