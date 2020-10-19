@@ -2,18 +2,18 @@ CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
   ENABLED: true
-GPUS: (0,)
+GPUS: (1,)
 OUTPUT_DIR: 'output'
 LOG_DIR: 'log'
 WORKERS: 8
-PRINT_FREQ: 1
+PRINT_FREQ: 10
 
 DATASET:
   DATASET: panorama
   ROOT: 'data/'
   TEST_SET: 'data/panorama/val_list.txt'
   TRAIN_SET: 'data/panorama/train_list.txt'
-  NUM_CLASSES: 17
+  NUM_CLASSES: 5
 MODEL:
   NAME: seg_hrnet
   PRETRAINED: 'pretrained_models/hrnet_w18_small_model_v1.pth'
@@ -73,14 +73,14 @@ LOSS:
   OHEMKEEP: 131072
 TRAIN:
   IMAGE_SIZE:
-  - 720
-  - 540
+  - 880 #720
+  - 660 #540
   BASE_SIZE: 1440
   BATCH_SIZE_PER_GPU: 16
   SHUFFLE: true
   BEGIN_EPOCH: 0
   END_EPOCH: 200
-  RESUME: true
+  RESUME: false
   OPTIMIZER: sgd
   LR: 0.01
   WD: 0.0005
@@ -92,7 +92,7 @@ TRAIN:
   IGNORE_LABEL: 255
   SCALE_FACTOR: 16
 TEST:
-  IMAGE_SIZE:
+  IMAGE_SIZE:  # these parameters have no effect for testing data
   - 720
   - 540
   BASE_SIZE: 1440

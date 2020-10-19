@@ -1,7 +1,15 @@
 
-docker run --runtime=nvidia --rm -it --name=hrnet --net=host -v /mnt:/mnt pytorch/pytorch:1.1.0-cuda10.0-cudnn7.5-devel
+### run with docker on msraig-gpu02
+
+docker run --runtime=nvidia --rm -it --name=hrnet --shm-size=1g --net=host -v /mnt:/mnt pytorch/pytorch:1.1.0-cuda10.0-cudnn7.5-devel
+
+
+apt-get update; \
+apt-get install libgtk2.0-dev -y; \
+cd /mnt/hd3/penwan/Projects/HRNet; \
+pip install -r requirements.txt --ignore-installed; \
+export CUDA_VISIBLE_DEVICES=3 \
 export PS1='\[\033[1;36m\]\u\[\033[1;31m\]@(docker)\[\033[1;32m\]\h:\[\033[1;35m\]\w\[\033[1;31m\]\n\$\[\033[0m\] '
 
-apt-get udpate
-apt-get install libgtk2.0-dev
-pip install -r requirements.txt --ignore-installed
+
+python -m torch.distributed.launch --nproc_per_node=1 tools/train.py --cfg=experiments/panorama/train.yaml

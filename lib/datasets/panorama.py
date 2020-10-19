@@ -6,6 +6,7 @@ import random
 from PIL import Image
 
 import torch
+import torchvision.transforms as transforms
 
 from .base_dataset import BaseDataset
 
@@ -51,7 +52,8 @@ class Panorama(BaseDataset):
                 for label in tmp[4:]:
                     self.compress_map[int(label)] = i
         
-        self.barrel_distortion_map = self.initialize_barrel_distortion_map(self.crop_size)
+        image_size = (768, 1024)
+        self.barrel_distortion_map = self.initialize_barrel_distortion_map(image_size)
         self.motion_blur_kernels = np.array([
             [[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]],
             [[0,1,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,1,0]],
@@ -65,16 +67,20 @@ class Panorama(BaseDataset):
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # !!! from BGR to RGB !!!
         size = image.shape
         if 'test' in self.list_path:
             image = self.input_transform(image)
             image = image.transpose((2, 0, 1))
             return image.copy(), np.array(size), self.files[index]
         else:
+            color_jitter = transforms.ColorJitter(0.2, 0.2, 0.2, 0.2)
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
             label = self.compress_label(label)
             image = self.random_motion_blur(image)
             image, label = self.barrel_distortion(image, label)
+            image, label = self.rand_crop(image, label)
+            image = np.asarray(color_jitter(Image.fromarray(image)))            
             image = self.input_transform(image)
             image = image.transpose((2, 0, 1))
             return image.copy(), label.copy(), np.array(size), self.files[index]

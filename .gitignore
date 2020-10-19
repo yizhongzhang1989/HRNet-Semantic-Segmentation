@@ -5,3 +5,5 @@ data/lip
 .vscode
 StoreSemanticTrainingData
 __pycache__
+panorama
+panorama_v0
