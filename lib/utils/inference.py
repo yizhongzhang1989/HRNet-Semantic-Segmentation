@@ -15,6 +15,8 @@ def default_preprocess_function(x):
     return x
 
 def single_image_inference(network, image):
+    network.eval()
+
     h, w = image.shape[1:]
     image = np.expand_dims(image, 0)
     image = torch.from_numpy(image).cuda()
@@ -27,6 +29,8 @@ def single_image_inference(network, image):
     return predict
 
 def batch_inference(network, batch, output_max_probability=False, output_raw=False):
+    network.eval()
+
     h, w = batch[0].shape[1:]
     batch = np.array(batch)
     batch = torch.from_numpy(batch).cuda()
@@ -53,7 +57,7 @@ def inference(network, arguments):
     else:
         preprocess_function = default_preprocess_function
 
-    for i, image_name in enumerate(tqdm(input_list)):
+    for i, image_name in enumerate(tqdm(input_list, ncols=80)):
         image = cv2.imread(image_name, cv2.IMREAD_COLOR)
         image = preprocess_function(image)
         predict = single_image_inference(network, image)
