@@ -67,24 +67,34 @@ class Panorama(BaseDataset):
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # !!! from BGR to RGB !!!
+        image = self.brg2rgb(image)
         size = image.shape
-        if 'test' in self.list_path:
-            image = self.input_transform(image)
+        if 'test' in self.list_path:            
+            image = self.normalize_image(image)
             image = image.transpose((2, 0, 1))
             return image.copy(), np.array(size), self.files[index]
         else:
-            color_jitter = transforms.ColorJitter(0.2, 0.2, 0.2, 0.2)
+            color_jitter = transforms.ColorJitter(0.2, 0.2, 0.2, 0.2) # only supports PIL or tensor input
             label = cv2.imread(os.path.join(self.root, "label", self.files[index] + ".png"), cv2.IMREAD_GRAYSCALE)
             label = self.compress_label(label)
             image = self.random_motion_blur(image)
             image, label = self.barrel_distortion(image, label)
             image, label = self.rand_crop(image, label)
             image = np.asarray(color_jitter(Image.fromarray(image)))            
-            image = self.input_transform(image)
+            image = self.normalize_image(image)
             image = image.transpose((2, 0, 1))
             return image.copy(), label.copy(), np.array(size), self.files[index]
     
+    def brg2rgb(self, image):
+        return image[:, :, ::-1]
+
+    def normalize_image(self, image):
+        image = image.astype(np.float32)
+        image = image / 255.0
+        image -= self.mean
+        image /= self.std
+        return image
+
     def save_pred(self, preds, sv_path, name):
         preds = preds.cpu().numpy().copy()
         preds = np.asarray(np.argmax(preds, axis=1), dtype=np.uint8)
