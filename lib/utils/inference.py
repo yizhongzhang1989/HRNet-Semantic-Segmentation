@@ -5,6 +5,11 @@ import torch
 from torch.nn import functional as F
 from tqdm import tqdm
 
+def resize_image(x, scale):
+    h, w = int(scale * x.shape[0]), int(scale * x.shape[1])
+    x = cv2.resize(x, (w, h))
+    return x
+
 def default_preprocess_function(x):
     x = np.array(x).astype(np.float32)
     x = x[:,:,::-1]
@@ -61,6 +66,4 @@ def inference(network, arguments):
         image = cv2.imread(image_name, cv2.IMREAD_COLOR)
         image = preprocess_function(image)
         predict = single_image_inference(network, image)
-        if not os.path.exists(os.path.dirname(output_list[i])):
-            os.makedirs(output_list[i])
         cv2.imwrite(output_list[i], predict)

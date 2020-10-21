@@ -15,11 +15,11 @@ from utils.inference import batch_inference as inference
 def parse_args():
     parser = argparse.ArgumentParser(description='Train segmentation network')
     
-    parser.add_argument('--cfg', help='experiment configure file name', type=str, default="D:/testNet/small_v2_train.yaml")
-    parser.add_argument("--pth", help="pth file name", type=str, default="D:/testNet/final_state.pth")
-    parser.add_argument("--input_video", help="input video file name", type=str, default="D:/testNet/input1.mp4")
-    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="D:/testNet/optical_flow1.avi")
-    parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.71111111111111111111)
+    parser.add_argument('--cfg', help='experiment configure file name', type=str, default="experiments/panorama/train.yaml")
+    parser.add_argument("--pth", help="pth file name", type=str, default="output/panorama/train/best.pth")
+    parser.add_argument("--input_video", help="input video file name", type=str, default="data/panorama/input.mp4")
+    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="data/panorama/output-optical-flow-resize.avi")
+    parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.5)
     parser.add_argument("--sliding_window", type=int, default=5)
     parser.add_argument('opts',
                         help="Modify config options using the command-line",

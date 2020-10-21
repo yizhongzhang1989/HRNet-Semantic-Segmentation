@@ -21,9 +21,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train segmentation network')
     
     parser.add_argument('--cfg', help='experiment configure file name', type=str, default="experiments/panorama/train.yaml")
-    parser.add_argument("--pth", help="pth file name", type=str, default="output/panorama/1015_train/final_state.pth")
+    parser.add_argument("--pth", help="pth file name", type=str, default="output/panorama/train/best.pth")
     parser.add_argument("--input_video", help="input video file name", type=str, default="data/panorama/input.mp4")
-    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="data/panorama/output.avi")
+    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="data/panorama/output-resize.avi")
     parser.add_argument("--batch_size", help="frames per batch", type=int, default=12)
     parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.5)
     parser.add_argument('opts',
@@ -69,6 +69,7 @@ pretrained_dict = {k[6:]: v for k, v in pretrained_dict.items() if k[6:] in mode
 model_dict.update(pretrained_dict)
 model.load_state_dict(model_dict)
 model = model.cuda()
+model.eval()
 
 inputVideo = cv2.VideoCapture(input_video_dir)
 total_frame = int(inputVideo.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -98,7 +99,7 @@ while inputVideo.isOpened():
         original = []
 
 # if len(batch) > 0:
-#     process_batch(model, batch, original)
+#     process_batch(model, batch, original, outputVideo)
 
 inputVideo.release()
 outputVideo.release()
