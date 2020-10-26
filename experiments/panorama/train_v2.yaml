@@ -13,7 +13,7 @@ DATASET:
   ROOT: 'data/'
   TEST_SET: 'data/panorama/val_list.txt'
   TRAIN_SET: 'data/panorama/train_list.txt'
-  NUM_CLASSES: 5
+  NUM_CLASSES: 17
 MODEL:
   NAME: seg_hrnet
   PRETRAINED: 'pretrained_models/hrnet_w18_small_model_v2.pth'
@@ -76,7 +76,7 @@ TRAIN:
   - 880 #720
   - 660 #540
   BASE_SIZE: 1440
-  BATCH_SIZE_PER_GPU: 16
+  BATCH_SIZE_PER_GPU: 10
   SHUFFLE: true
   BEGIN_EPOCH: 0
   END_EPOCH: 200
@@ -96,6 +96,6 @@ TEST:
   - 720
   - 540
   BASE_SIZE: 1440
-  BATCH_SIZE_PER_GPU: 16
+  BATCH_SIZE_PER_GPU: 10
   FLIP_TEST: false
   MULTI_SCALE: false

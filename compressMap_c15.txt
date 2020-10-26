@@ -5,13 +5,11 @@ pillar 200 0 255 3
 door 100 0 255 4
 window 255 120 200 5
 stairs 100 155 100 6
-escalator 0 200 125 7
-elevator 240 0 125 8
+escalator 0 200 125 7 8
 layered_shelf 100 50 0 10
 table_like_shelf 255 0 0 11
 tall_freezer 125 200 255 13
 short_freezer 120 255 0 14
 cashier 0 255 100 15
 hanging_objects 255 200 0 20
-other_objects 25 25 50 30
-human_or_moving_objects 255 0 100 40
+other_objects 25 25 50 30 40

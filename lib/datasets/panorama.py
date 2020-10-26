@@ -67,7 +67,7 @@ class Panorama(BaseDataset):
     
     def __getitem__(self, index):
         image = cv2.imread(os.path.join(self.root, "image", self.files[index] + ".jpg"), cv2.IMREAD_COLOR)
-        image = self.brg2rgb(image)
+        image = self.bgr2rgb(image)
         size = image.shape
         if 'test' in self.list_path:            
             image = self.normalize_image(image)
@@ -85,7 +85,7 @@ class Panorama(BaseDataset):
             image = image.transpose((2, 0, 1))
             return image.copy(), label.copy(), np.array(size), self.files[index]
     
-    def brg2rgb(self, image):
+    def bgr2rgb(self, image):
         return image[:, :, ::-1]
 
     def normalize_image(self, image):

@@ -2,6 +2,7 @@ import argparse
 import torch
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 import _init_paths
 import models
@@ -21,10 +22,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train segmentation network')
     
     parser.add_argument('--cfg', help='experiment configure file name', type=str, default="experiments/panorama/train.yaml")
-    parser.add_argument("--pth", help="pth file name", type=str, default="output/panorama/train/best.pth")
-    parser.add_argument("--input_video", help="input video file name", type=str, default="data/panorama/input.mp4")
-    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="data/panorama/output-resize.avi")
-    parser.add_argument("--batch_size", help="frames per batch", type=int, default=12)
+    parser.add_argument("--pth", help="pth file name", type=str, default="output/panorama/1021_train_c17/best.pth")
+    parser.add_argument("--input_video", help="input video file name", type=str, default="data/panorama/20200505_14-05-32-250.mp4")
+    parser.add_argument("--output_video", help="output video file name, should be .avi format", type=str, default="data/panorama/20200505_14-05-32-250-output-0.5.avi")
+    parser.add_argument("--batch_size", help="frames per batch", type=int, default=16)
     parser.add_argument("--scale_factor", help="scale factor to resize the image", type=float, default=0.5)
     parser.add_argument('opts',
                         help="Modify config options using the command-line",
@@ -84,12 +85,13 @@ outputVideo = cv2.VideoWriter(output_video_dir, cv2.VideoWriter_fourcc(*"DIVX"),
 original = []
 batch = []
 count = 0
+pbar = tqdm(total=total_frame, ncols=80)
 while inputVideo.isOpened():
     ret, frame = inputVideo.read()
     if ret is False:
         break
     count += 1
-    print(count, "/", total_frame)
+    pbar.update(1)
     frame = cv2.resize(frame, (w, h))
     batch.append(preprocess(frame))
     original.append(frame)
@@ -97,6 +99,7 @@ while inputVideo.isOpened():
         process_batch(model, batch, original, outputVideo)
         batch = []
         original = []
+pbar.close()
 
 # if len(batch) > 0:
 #     process_batch(model, batch, original, outputVideo)
