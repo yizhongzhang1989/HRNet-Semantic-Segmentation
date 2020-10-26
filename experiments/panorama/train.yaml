@@ -73,9 +73,9 @@ LOSS:
   OHEMKEEP: 131072
 TRAIN:
   IMAGE_SIZE:
-  - 880 #720
-  - 660 #540
-  BASE_SIZE: 1440
+  - 800 #720
+  - 600 #540
+  BASE_SIZE: 1024
   BATCH_SIZE_PER_GPU: 16
   SHUFFLE: true
   BEGIN_EPOCH: 0
@@ -95,7 +95,7 @@ TEST:
   IMAGE_SIZE:  # these parameters have no effect for testing data
   - 720
   - 540
-  BASE_SIZE: 1440
+  BASE_SIZE: 1024
   BATCH_SIZE_PER_GPU: 16
   FLIP_TEST: false
   MULTI_SCALE: false

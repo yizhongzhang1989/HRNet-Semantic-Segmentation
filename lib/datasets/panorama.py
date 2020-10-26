@@ -79,7 +79,11 @@ class Panorama(BaseDataset):
             label = self.compress_label(label)
             image = self.random_motion_blur(image)
             image, label = self.barrel_distortion(image, label)
-            image, label = self.rand_crop(image, label)
+            
+            # image, label = self.rand_crop(image, label)
+            rand_scale = 0.8 + random.randint(0, 6) / 10.0
+            image, label = self.multi_scale_aug(image, label, rand_scale=rand_scale)
+            
             image = np.asarray(color_jitter(Image.fromarray(image)))            
             image = self.normalize_image(image)
             image = image.transpose((2, 0, 1))

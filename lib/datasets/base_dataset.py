@@ -102,8 +102,7 @@ class BaseDataset(data.Dataset):
         
         return image, label
 
-    def multi_scale_aug(self, image, label=None, 
-            rand_scale=1, rand_crop=True):
+    def multi_scale_aug(self, image, label=None, rand_scale=1, rand_crop=True):
         long_size = np.int(self.base_size * rand_scale + 0.5)
         if label is not None:
             image, label = self.image_resize(image, long_size, label)
