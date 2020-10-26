@@ -6,4 +6,5 @@ data/lip
 StoreSemanticTrainingData
 __pycache__
 data/panorama
+data/Spatial_Reconstruction
 *.pth

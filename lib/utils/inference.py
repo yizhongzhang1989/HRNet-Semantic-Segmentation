@@ -12,12 +12,13 @@ def resize_image(x, scale):
 
 def default_preprocess_function(x):
     x = np.array(x).astype(np.float32)
-    x = x[:,:,::-1]
+    x = x[:,:,::-1] # bgr -> rgb
     x = x / 255.0
     x -= [0.485, 0.456, 0.406]
     x /= [0.229, 0.224, 0.225]
     x = x.transpose([2,0,1])
     return x
+
 
 def single_image_inference(network, image):
     network.eval()
@@ -54,16 +55,12 @@ def batch_inference(network, batch, output_max_probability=False, output_raw=Fal
     else:
         return label
 
-def inference(network, arguments):
-    input_list = arguments["input_list"]
-    output_list = arguments["output_list"]
-    if "preprocess_function" in arguments:
-        preprocess_function = arguments["preprocess_function"]
-    else:
-        preprocess_function = default_preprocess_function
-
+def inference(network, input_list, output_list,
+              preprocess_function=default_preprocess_function,
+              postprocess_function=lambda x: x):
     for i, image_name in enumerate(tqdm(input_list, ncols=80)):
         image = cv2.imread(image_name, cv2.IMREAD_COLOR)
         image = preprocess_function(image)
         predict = single_image_inference(network, image)
+        predict = postprocess_function(predict)
         cv2.imwrite(output_list[i], predict)
