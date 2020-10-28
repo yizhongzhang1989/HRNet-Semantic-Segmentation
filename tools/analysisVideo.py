@@ -77,6 +77,7 @@ total_frame = int(inputVideo.get(cv2.CAP_PROP_FRAME_COUNT))
 h = int(inputVideo.get(cv2.CAP_PROP_FRAME_HEIGHT))
 w = int(inputVideo.get(cv2.CAP_PROP_FRAME_WIDTH))
 fps = inputVideo.get(cv2.CAP_PROP_FPS)
+print('Video resolution: {} x {}'.format(w, h))
 
 h, w = h * scale_factor, w * scale_factor
 h, w = int(h), int(w)

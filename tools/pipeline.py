@@ -44,7 +44,7 @@ def parse_args():
   parser.add_argument('--cfg', help='experiment configure file name',
                       type=str, default="experiments/panorama/train.yaml")
   parser.add_argument("--pth", help="pth file name", type=str,
-                      default="output/panorama/1021_train_c17/best.pth")
+                      default="output/panorama/1027_train_scale_small/best.pth")
   parser.add_argument("--scale_factor", help="scale factor to resize the image",
                       type=float, default=0.5)
   parser.add_argument('opts', help="Modify config options using the command-line",

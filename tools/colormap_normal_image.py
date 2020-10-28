@@ -60,6 +60,7 @@ for i in tqdm(range(len(image_list)), ncols=80):
   accu.append((label_rgb_gt == label_rgb).prod(-1).mean())
 
 # save accu
-with open(os.path.join(output_dir, 'accu.txt'), 'w') as fid:
+with open(os.path.join(output_dir, 'accu.csv'), 'w') as fid:
   for i in range(len(image_list)):
     fid.write('%s, %f\n' % (image_list[i], accu[i]))
+  fid.write('All, %f\n' % np.array(accu).mean())
