@@ -1,12 +1,15 @@
 import os
 import argparse
 import torch
+import numpy as np
+import cv2
+from tqdm import tqdm
 
 import _init_paths
 import models
 from config import config
 from config import update_config
-from utils.inference import inference, resize_image, default_preprocess_function
+from utils.inference import inference, resize_image, default_preprocess_function, inference_voting
 
 # ## normal_image
 input_list, output_list = [], []
@@ -42,9 +45,9 @@ for folder in folders:
 def parse_args():
   parser = argparse.ArgumentParser(description='Train segmentation network')
   parser.add_argument('--cfg', help='experiment configure file name',
-                      type=str, default="experiments/panorama/train.yaml")
+                      type=str, default="experiments/panorama/train_v2.yaml")
   parser.add_argument("--pth", help="pth file name", type=str,
-                      default="output/panorama/1027_train_scale_small/best.pth")
+                      default="output/panorama/1027_train_v2/best.pth")
   parser.add_argument("--scale_factor", help="scale factor to resize the image",
                       type=float, default=0.5)
   parser.add_argument('opts', help="Modify config options using the command-line",
@@ -76,4 +79,8 @@ def postprocess_function(x):
   x = resize_image(x, 1.0 / args.scale_factor)
   return x
 
-inference(model, input_list, output_list, preprocess_function, postprocess_function)
+# inference(model, input_list, output_list, preprocess_function, postprocess_function)
+
+for i in tqdm(range(len(input_list)), ncols=80):
+  predict = inference_voting(model, input_list[i], scales=[args.scale_factor + i * 0.04 for i in range(-5, 5)])        
+  cv2.imwrite(output_list[i], predict)

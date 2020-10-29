@@ -3,11 +3,20 @@ import cv2
 import numpy as np
 import torch
 from torch.nn import functional as F
+import torchvision.transforms as transforms
 from tqdm import tqdm
+from PIL import Image
 
 def resize_image(x, scale):
     h, w = int(scale * x.shape[0]), int(scale * x.shape[1])
     x = cv2.resize(x, (w, h))
+    return x
+
+def normalize_image(x):
+    x = np.array(x).astype(np.float32)
+    x = x / 255.0
+    x -= [0.485, 0.456, 0.406]
+    x /= [0.229, 0.224, 0.225]
     return x
 
 def default_preprocess_function(x):
@@ -33,6 +42,41 @@ def single_image_inference(network, image):
     predict = np.argmax(predict, axis=1)
     predict = np.squeeze(predict).astype(np.uint8)
     return predict
+
+
+def inference_voting(model, filename, scales=[1]):
+    model.eval()
+    image_input = cv2.imread(filename, cv2.IMREAD_COLOR)
+    image_input = image_input[:,:,::-1]  # bgr2rgb
+    h, w = image_input.shape[0], image_input.shape[1]
+    
+    preds = 0
+    votes = len(scales)
+    color_jitter = transforms.ColorJitter(0.2, 0.2, 0.2, 0.2)
+    for i in range(votes):
+        image = np.asarray(color_jitter(Image.fromarray(image_input)))  # random color
+        
+        # rand_scale = 0.8 + random.randint(0, 6) / 10.0  # random scale
+        rand_scale = scales[i]
+        w_rnd, h_rnd = int(rand_scale * w), int(rand_scale * h)
+        image = cv2.resize(image, (w_rnd, h_rnd))
+        
+        image = normalize_image(image)
+        image = image.transpose([2, 0, 1])
+        image = np.expand_dims(image, 0)
+        image = torch.from_numpy(image).cuda()
+
+        predict = model.forward(image)
+        predict = F.upsample(predict, (h, w), mode='bilinear')
+        predict = F.softmax(predict, dim=1)
+        predict = predict.cpu().detach().numpy()
+        preds = preds + predict
+    preds = preds / votes
+    preds = np.argmax(preds, axis=1)
+    preds = np.squeeze(preds).astype(np.uint8)
+    return preds
+
+
 
 def batch_inference(network, batch, output_max_probability=False, output_raw=False):
     network.eval()
