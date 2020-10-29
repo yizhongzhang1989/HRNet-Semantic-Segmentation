@@ -5,6 +5,6 @@ data/lip
 .vscode
 StoreSemanticTrainingData
 __pycache__
-data/panorama
+data/panorama**
 data/Spatial_Reconstruction
 *.pth

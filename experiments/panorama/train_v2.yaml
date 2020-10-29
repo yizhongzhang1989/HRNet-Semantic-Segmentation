@@ -2,17 +2,17 @@ CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
   ENABLED: true
-GPUS: (1,)
-OUTPUT_DIR: 'output'
+GPUS: (0,)
+OUTPUT_DIR: 'output/panorama_large'
 LOG_DIR: 'log'
 WORKERS: 8
 PRINT_FREQ: 10
 
 DATASET:
   DATASET: panorama
-  ROOT: 'data/'
-  TEST_SET: 'data/panorama/val_list.txt'
-  TRAIN_SET: 'data/panorama/train_list.txt'
+  ROOT: 'data/panorama_large'
+  TEST_SET: 'data/panorama_large/val_list.txt'
+  TRAIN_SET: 'data/panorama_large/train_list.txt'
   NUM_CLASSES: 17
 MODEL:
   NAME: seg_hrnet
@@ -73,9 +73,9 @@ LOSS:
   OHEMKEEP: 131072
 TRAIN:
   IMAGE_SIZE:
-  - 880 #720
-  - 660 #540
-  BASE_SIZE: 1440
+  - 800 #720
+  - 600 #540
+  BASE_SIZE: 1024
   BATCH_SIZE_PER_GPU: 10
   SHUFFLE: true
   BEGIN_EPOCH: 0
@@ -95,7 +95,7 @@ TEST:
   IMAGE_SIZE:  # these parameters have no effect for testing data
   - 720
   - 540
-  BASE_SIZE: 1440
+  BASE_SIZE: 1024
   BATCH_SIZE_PER_GPU: 10
   FLIP_TEST: false
   MULTI_SCALE: false

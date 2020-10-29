@@ -30,8 +30,7 @@ class Panorama(BaseDataset):
         super(Panorama, self).__init__(ignore_label, base_size,
                     crop_size, downsample_rate, scale_factor, mean, std)
         
-        self.root = os.path.join(root, "panorama")
-
+        self.root = root
         self.num_classes = num_classes
         self.class_weights = None
         self.multi_scale = multi_scale
