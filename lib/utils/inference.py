@@ -29,12 +29,12 @@ def default_preprocess_function(x):
     return x
 
 
-def single_image_inference(network, image):
+def single_image_inference(network, image, device):
     network.eval()
 
     h, w = image.shape[1:]
     image = np.expand_dims(image, 0)
-    image = torch.from_numpy(image).cuda()
+    image = torch.from_numpy(image).to(device)
     predict = network.forward(image)
     predict = F.upsample(predict, (h, w), mode='bilinear')
     predict = F.softmax(predict, dim=1)
@@ -101,10 +101,11 @@ def batch_inference(network, batch, output_max_probability=False, output_raw=Fal
 
 def inference(network, input_list, output_list,
               preprocess_function=default_preprocess_function,
-              postprocess_function=lambda x: x):
+              postprocess_function=lambda x: x,
+              device=torch.device('cuda')):
     for i, image_name in enumerate(tqdm(input_list, ncols=80)):
         image = cv2.imread(image_name, cv2.IMREAD_COLOR)
         image = preprocess_function(image)
-        predict = single_image_inference(network, image)
+        predict = single_image_inference(network, image, device)
         predict = postprocess_function(predict)
         cv2.imwrite(output_list[i], predict)

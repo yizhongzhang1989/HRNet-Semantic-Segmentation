@@ -1,0 +1,6 @@
+
+
+
+python tools/analysisVideo.py --input_video=/mnt/hd3/penwan/Projects/HRNet/data/Spatial_Reconstruction/Supermarket-1/超市1-20200610_21-33-09-658.mp4 --output_video=/mnt/hd3/penwan/Projects/HRNet/data/Spatial_Reconstruction/Supermarket-1/超市1-20200610_21-33-09-658-output-0.5-scale_large.mp4 --pth=/mnt/hd3/penwan/Projects/HRNet/output/panorama/1027_train_scale_large/best.pth
+
+python tools/analysisVideo.py --input_video=/mnt/hd3/penwan/Projects/HRNet/data/Spatial_Reconstruction/Supermarket-1/超市1-20200610_21-33-09-658.mp4 --output_video=/mnt/hd3/penwan/Projects/HRNet/data/Spatial_Reconstruction/Supermarket-1/超市1-20200610_21-33-09-658-output-0.5-v2.mp4 --pth=/mnt/hd3/penwan/Projects/HRNet/output/panorama/1027_train_v2/best.pth --batch_size=6 --cfg=experiments/panorama/train_v2.yaml
